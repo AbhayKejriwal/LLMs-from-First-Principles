@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LLMs from First Principles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0E1117;--panel:#161D27;--panel2:#1D2630;--line:#2C3744;--mist:#8C9AAB;--paper:#EAEEF4;
+  --signal:#FF8A3D;--signal-dim:rgba(255,138,61,.14);--data:#5BC9D6;--good:#7BD88F;--bad:#F2596A;
+  --disp:'Space Grotesk',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--ink);color:var(--paper);font-family:var(--disp);overflow:hidden;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:64px 64px;opacity:.08;
+  -webkit-mask-image:radial-gradient(circle at 50% 45%,#000 30%,transparent 80%);mask-image:radial-gradient(circle at 50% 45%,#000 30%,transparent 80%)}
+.deck{position:fixed;inset:0;z-index:1}
+.page{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  padding:clamp(20px,4vw,64px);padding-top:62px;padding-bottom:58px;
+  opacity:0;visibility:hidden;transform:translateX(34px) scale(.99);
+  transition:opacity .42s ease,transform .42s ease,visibility .42s;overflow:auto}
+.page.active{opacity:1;visibility:visible;transform:none}
+.page.prev{transform:translateX(-34px) scale(.99)}
+.wrap{width:100%;max-width:1100px;margin:0 auto;display:flex;flex-direction:column;align-items:center;text-align:center}
+.eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--signal);margin-bottom:14px;display:flex;gap:11px;align-items:center}
+.eyebrow .num{color:var(--mist)}
+.eyebrow .hintlbl{color:var(--mist);text-transform:none;letter-spacing:0;font-size:.66rem}
+h1{font-size:clamp(2.1rem,5.4vw,4.3rem);font-weight:700;line-height:1.03;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,3.2vw,2.5rem);font-weight:600;line-height:1.08;letter-spacing:-.015em}
+.signal{color:var(--signal)}.data{color:var(--data)}.good{color:var(--good)}.mono{font-family:var(--mono)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--signal);box-shadow:0 0 14px var(--signal);flex:none}
+.fig{margin-top:24px;width:100%}
+.pill{font-family:var(--mono);font-size:.6rem;letter-spacing:.13em;text-transform:uppercase;padding:3px 9px;border-radius:99px;background:var(--signal-dim);color:var(--signal);border:1px solid rgba(255,138,61,.3)}
+.pill.d{background:rgba(91,201,214,.12);color:var(--data);border-color:rgba(91,201,214,.32)}
+.pill.g{background:rgba(123,216,143,.12);color:var(--good);border-color:rgba(123,216,143,.32)}
+button.ui{font-family:var(--mono);background:var(--panel);border:1px solid var(--line);color:var(--paper);padding:9px 15px;border-radius:9px;cursor:pointer;font-size:.8rem;transition:.18s}
+button.ui:hover{border-color:var(--signal);color:var(--signal)}
+button.ui.on{background:var(--signal);color:#0A0E14;border-color:var(--signal)}
+
+/* chrome */
+.hud{position:fixed;z-index:10;font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;color:var(--mist)}
+.hud.tl{top:22px;left:26px;text-transform:uppercase}.hud.tr{top:22px;right:26px}
+.prog{position:fixed;left:0;top:0;height:2px;background:var(--signal);z-index:11;transition:width .5s ease;box-shadow:0 0 12px var(--signal)}
+.dots{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:10}
+.dots button{width:7px;height:7px;border-radius:50%;border:none;background:var(--line);cursor:pointer;padding:0;transition:.3s}
+.dots button.on{background:var(--signal);width:20px;border-radius:99px}
+.nav{position:fixed;bottom:14px;right:22px;display:flex;gap:8px;z-index:10}
+.nav button{font-family:var(--mono);background:var(--panel);border:1px solid var(--line);color:var(--paper);width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:1rem;transition:.2s}
+.nav button:hover{border-color:var(--signal);color:var(--signal)}
+.hint{position:fixed;bottom:18px;left:22px;z-index:10;font-family:var(--mono);font-size:.64rem;color:var(--mist);opacity:.6}
+canvas{display:block}
+
+/* reveal helper */
+.reveal{opacity:0;transform:translateY(10px);transition:.5s;pointer-events:none}
+.reveal.on{opacity:1;transform:none;pointer-events:auto}
+
+/* hook */
+#hookwrap{position:relative;width:100%;height:min(48vh,380px)}
+#hookcv{position:absolute;inset:0;width:100%;height:100%}
+#counter{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+#counter .big{font-size:clamp(3.6rem,11vw,8rem);font-weight:700;line-height:1;color:var(--signal);text-shadow:0 0 50px rgba(255,138,61,.35);background:radial-gradient(circle,var(--ink) 55%,transparent 75%);padding:0 .3em}
+#counter .lbl{font-family:var(--mono);font-size:.78rem;letter-spacing:.1em;color:var(--mist);text-transform:uppercase;margin-top:4px;background:var(--ink);padding:2px 10px}
+
+/* rings */
+.ringsrow{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center;width:100%}
+.ringsvg{width:100%;max-width:420px;margin:auto;cursor:pointer}
+.ringsvg circle,.ringsvg text{transition:.3s}
+.ringpanel{text-align:left;min-height:280px;display:flex;flex-direction:column}
+.ringpanel .tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--signal)}
+.ringpanel h3{font-size:1.55rem;font-weight:600;margin:5px 0 12px}
+.ringmini{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;height:150px;display:flex;align-items:center;justify-content:center}
+.ringmini svg{width:100%;height:100%}
+.ringpanel .wall{font-size:.92rem;color:var(--mist)}
+.ringpanel .wall b{color:var(--bad);font-weight:600}
+.ringpanel details{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+.ringdet{font-size:.84rem;color:var(--mist);margin-top:10px;line-height:1.5;border-top:1px solid var(--line);padding-top:10px}
+.ringpanel summary{font-family:var(--mono);font-size:.74rem;color:var(--data);cursor:pointer;list-style:none}
+.ringpanel summary::-webkit-details-marker{display:none}
+.ringpanel details p{font-size:.86rem;color:var(--mist);margin-top:8px;line-height:1.5}
+
+/* next-token + net */
+.ntp{display:grid;grid-template-columns:.85fr 1.15fr;gap:24px;width:100%;max-width:880px;align-items:center}
+.netsvg{width:100%;max-width:330px;margin:auto}
+.netsvg .edge{stroke:var(--line);stroke-width:1}
+.netsvg .edge.pulse{stroke:var(--signal);stroke-width:1.8;animation:edgepulse .7s ease}
+@keyframes edgepulse{0%{stroke:var(--signal)}100%{stroke:var(--line)}}
+.netsvg .nd{fill:var(--panel2);stroke:var(--line)}
+.netsvg .nd.in{fill:rgba(91,201,214,.4);stroke:var(--data)}
+.netsvg .nd.out{fill:rgba(255,138,61,.4);stroke:var(--signal)}
+.sentence{font-family:var(--mono);font-size:clamp(1rem,2.1vw,1.5rem);min-height:1.5em;display:flex;flex-wrap:wrap;gap:.3em;justify-content:flex-start;align-items:center;margin-bottom:14px}
+.sentence .cursor{color:var(--signal);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.bars{display:flex;flex-direction:column;gap:7px}
+.bar{display:grid;grid-template-columns:6em 1fr 3em;gap:9px;align-items:center;font-family:var(--mono);font-size:.84rem}
+.bar .tok{text-align:right;color:var(--paper)}
+.bar.top .tok{color:var(--signal)}
+.bar .track{height:21px;background:var(--panel2);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.bar .fill{height:100%;width:0;background:linear-gradient(90deg,rgba(255,138,61,.5),var(--signal));border-radius:6px;transition:width .55s cubic-bezier(.4,1.3,.5,1)}
+.bar.top .fill{box-shadow:0 0 14px var(--signal-dim)}
+.bar .pct{color:var(--mist);text-align:right}
+
+/* four pieces 2x2 */
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:880px}
+.cell{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-height:190px;display:flex;flex-direction:column;transition:.3s}
+.cell.active{border-color:var(--signal);box-shadow:0 0 24px var(--signal-dim)}
+.cell .ttl{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--signal);margin-bottom:4px}
+.cell .cap{font-size:.78rem;color:var(--mist);margin-top:auto}
+.cell .stage{flex:1;display:flex;align-items:center;justify-content:center}
+#p_tok .chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;font-family:var(--mono);font-size:.92rem}
+#p_tok .chip{padding:6px 10px;border-radius:7px;background:var(--panel2);border:1px solid var(--line);opacity:0;transform:scale(.8);transition:.3s}
+#p_tok .chip.on{opacity:1;transform:none;border-color:var(--signal);color:var(--signal)}
+.cell svg{width:100%;height:130px}
+
+/* compute */
+.calc{display:grid;gap:14px;width:100%;max-width:640px}
+.pipe{display:flex;align-items:stretch;gap:8px;justify-content:center;width:100%;max-width:720px;margin-bottom:8px}
+.pstage{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 10px;transition:.3s;text-align:center}
+.pstage.on{border-color:var(--signal);box-shadow:0 0 20px var(--signal-dim)}
+.pstage .n{font-family:var(--mono);font-size:.66rem;color:var(--mist);letter-spacing:.1em}
+.pstage h4{font-size:1rem;margin:5px 0 3px}
+.pstage p{font-size:.78rem;color:var(--mist)}
+.parr{display:flex;align-items:center;color:var(--mist);font-size:1.2rem}
+.slider{display:grid;grid-template-columns:8.5em 1fr 5em;gap:12px;align-items:center}
+.slider label{font-family:var(--mono);font-size:.8rem;color:var(--mist);text-align:left}
+.slider input[type=range]{-webkit-appearance:none;height:5px;border-radius:99px;background:var(--line);outline:none}
+.slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--signal);cursor:pointer;box-shadow:0 0 12px var(--signal-dim)}
+.slider .val{font-family:var(--mono);font-size:.9rem;color:var(--signal);text-align:right}
+.costout{font-family:var(--mono);font-size:clamp(1.8rem,5vw,3.4rem);font-weight:700;color:var(--signal);text-align:center;text-shadow:0 0 28px var(--signal-dim)}
+
+/* determinism */
+.detrow{display:grid;grid-template-columns:1fr 1fr;gap:22px;width:100%;max-width:900px;align-items:start}
+.floatbox{font-family:var(--mono);background:#0A0E14;border:1px solid var(--line);border-radius:12px;padding:18px;text-align:left;font-size:clamp(.82rem,1.4vw,1rem);line-height:1.9}
+.floatbox .order{display:flex;gap:7px;margin:10px 0;flex-wrap:wrap;align-items:center}
+.floatbox .n{padding:6px 11px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);cursor:pointer}
+.floatbox .res{color:var(--signal)}.floatbox .eq{color:var(--good)}
+.floatbox .hintc{font-size:.72rem;color:var(--mist)}
+.batchbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.batchbox svg{width:100%;height:170px}
+.batchcap{font-family:var(--mono);font-size:.74rem;color:var(--mist);text-align:center;margin-top:6px}
+
+/* interpretability dial */
+.clamp{width:100%;max-width:720px}
+.clampframe{font-size:.92rem;color:var(--mist);margin-bottom:14px;max-width:60ch;margin-left:auto;margin-right:auto}
+.clampframe b{color:var(--paper)}
+.dialrow{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;margin-bottom:16px}
+.dialrow .dlbl{font-family:var(--mono);font-size:.78rem;color:var(--signal);text-align:left}
+.dialrow input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:99px;background:var(--line)}
+.dialrow input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--signal);cursor:pointer;box-shadow:0 0 16px var(--signal)}
+.dialrow .dval{font-family:var(--mono);font-size:.8rem;color:var(--mist);min-width:5.5em;text-align:right}
+.clampout{font-size:clamp(1rem,1.9vw,1.3rem);line-height:1.5;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;min-height:110px;text-align:left}
+.clampout .gg{color:var(--signal);font-weight:600}
+.clamp details{margin-top:12px}.clamp summary{font-family:var(--mono);font-size:.74rem;color:var(--data);cursor:pointer;list-style:none}
+.clamp summary::-webkit-details-marker{display:none}.clamp details p{font-size:.86rem;color:var(--mist);margin-top:8px;max-width:64ch;margin-left:auto;margin-right:auto}
+
+/* agents */
+.agentwrap{display:grid;grid-template-columns:1fr 1.1fr;gap:24px;width:100%;align-items:center}
+.loopsvg{width:100%;max-width:320px;margin:auto}
+.loopsvg .node{transition:.3s}
+.term{font-family:var(--mono);background:#0A0E14;border:1px solid var(--line);border-radius:12px;padding:16px 18px;text-align:left;font-size:.8rem;line-height:1.9;min-height:210px}
+.term .l{opacity:.28;transition:.3s}.term .l.on{opacity:1}
+.term .ph{color:var(--signal);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase}
+.term .c{color:var(--data)}.term .ok{color:var(--good)}.term .m{color:var(--mist)}
+
+/* discussion / take */
+.take{margin-top:26px;max-width:60ch;background:var(--panel);border:1px solid rgba(255,138,61,.3);border-radius:14px;padding:20px;text-align:left;font-size:1.05rem;line-height:1.5;color:var(--paper)}
+.take .lbl{font-family:var(--mono);font-size:.62rem;letter-spacing:.13em;text-transform:uppercase;color:var(--signal);display:block;margin-bottom:8px}
+
+/* hard questions */
+.qas{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:760px}
+.qa{background:var(--panel);border:1px solid var(--line);border-radius:14px;min-height:120px;display:flex;align-items:center;justify-content:center;padding:18px;cursor:pointer;position:relative;text-align:center;transition:.3s}
+.qa .q{font-size:1.25rem;font-weight:600;transition:.4s}
+.qa .a{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:18px;font-family:var(--mono);font-size:.92rem;color:var(--signal);opacity:0;transition:.4s}
+.qa.shown{border-color:var(--signal);background:var(--signal-dim)}
+.qa.shown .q{opacity:0}.qa.shown .a{opacity:1}
+
+/* mental model */
+.notlist{display:flex;flex-direction:column;gap:11px;font-family:var(--mono);font-size:clamp(.9rem,1.5vw,1.1rem);color:var(--mist);margin-bottom:24px}
+.notlist div{opacity:0;transform:translateX(-12px);transition:.5s}.notlist div.on{opacity:1;transform:none}
+.notlist b{color:var(--paper)}
+.intern{font-size:clamp(1.5rem,3.3vw,2.6rem);line-height:1.25;max-width:22ch;font-weight:500;text-align:center}
+
+@media (max-width:760px){.ringsrow,.ntp,.detrow,.agentwrap{grid-template-columns:1fr}.grid4,.qas{grid-template-columns:1fr}.hint{display:none}.netsvg{max-width:260px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="prog" id="prog"></div>
+<div class="hud tl">LLMs · First Principles</div>
+<div class="hud tr"><span id="pageno">01</span> / 13</div>
+<div class="deck" id="deck">
+
+  <!-- 0 TITLE -->
+  <section class="page active"><div class="wrap">
+    <canvas id="titlecv" style="position:absolute;inset:0;width:100%;height:100%;opacity:.5;z-index:-1"></canvas>
+    <div class="eyebrow"><span class="dot"></span> Internal session</div>
+    <h1>LLMs from<br>First Principles</h1>
+    <p class="mono" style="color:var(--mist);margin-top:16px;font-size:.9rem">what these things actually are — built from the outside in</p>
+  </div></section>
+
+  <!-- 1 HOOK -->
+  <section class="page"><div class="wrap">
+    <div class="eyebrow"><span class="num">§1</span> The hook</div>
+    <h2>You use AI all day without noticing.</h2>
+    <div class="fig" id="hookwrap"><canvas id="hookcv"></canvas>
+      <div id="counter"><div class="big" id="cnum">0</div><div class="lbl">ML systems in everyday life</div></div>
+    </div>
+  </div></section>
+
+  <!-- 2 RINGS -->
+  <section class="page"><div class="wrap">
+    <div class="eyebrow"><span class="num">§2</span> 60 years of giving up control <span class="hintlbl">— click a ring · space cycles</span></div>
+    <div class="ringsrow fig">
+      <svg class="ringsvg" id="ringsvg" viewBox="0 0 400 400">
+        <circle data-i="0" cx="200" cy="200" r="190" fill="transparent" stroke="#2C3744" stroke-width="1.5"/>
+        <circle data-i="1" cx="200" cy="200" r="150" fill="transparent" stroke="#2C3744" stroke-width="1.5"/>
+        <circle data-i="2" cx="200" cy="200" r="110" fill="transparent" stroke="#2C3744" stroke-width="1.5"/>
+        <circle data-i="3" cx="200" cy="200" r="70"  fill="transparent" stroke="#2C3744" stroke-width="1.5"/>
+        <circle data-i="4" cx="200" cy="200" r="34"  fill="rgba(255,138,61,.16)" stroke="#FF8A3D" stroke-width="1.5"/>
+        <text data-t="0" x="200" y="28"  fill="#8C9AAB" font-family="JetBrains Mono" font-size="11" text-anchor="middle">AI</text>
+        <text data-t="1" x="200" y="68"  fill="#8C9AAB" font-family="JetBrains Mono" font-size="11" text-anchor="middle">ML</text>
+        <text data-t="2" x="200" y="108" fill="#8C9AAB" font-family="JetBrains Mono" font-size="11" text-anchor="middle">DL</text>
+        <text data-t="3" x="200" y="148" fill="#8C9AAB" font-family="JetBrains Mono" font-size="11" text-anchor="middle">TF</text>
+        <text data-t="4" x="200" y="204" fill="#FF8A3D" font-family="JetBrains Mono" font-size="12" text-anchor="middle">LLM</text>
+      </svg>
+      <div class="ringpanel" id="ringpanel"></div>
+    </div>
+  </div></section>
+
+  <!-- 3 NEXT-TOKEN + NET -->
+  <section class="page"><div class="wrap">
+    <div class="eyebrow"><span class="num">§3</span> what it actually does · the core <span class="hintlbl">— space predicts next</span></div>
+    <h2>It predicts the next <span class="signal">token</span>.</h2>
+    <div class="ntp fig">
+      <svg class="netsvg" id="netsvg" viewBox="0 0 200 200"></svg>
+      <div>
+        <div class="sentence" id="ntpsent"></div>
+        <div class="bars" id="ntpbars"></div>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- 4 FOUR PIECES -->
+  <section class="page"><div class="wrap">
+    <div class="eyebrow"><span class="num">§3</span> four pieces, computed in order <span class="hintlbl">— space runs each</span></div>
+    <div class="grid4 fig">
+      <div class="cell" id="p_tok"><div class="ttl">1 · tokens</div><div class="stage"><div class="chips" id="tokchips"></div></div><div class="cap">it sees chunks, never letters</div></div>
+      <div class="cell" id="p_emb"><div class="ttl">2 · embeddings</div><div class="stage"><svg id="embsvg" viewBox="0 0 240 150"></svg></div><div class="cap">meaning becomes geometry</div></div>
+      <div class="cell" id="p_att"><div class="ttl">3 · attention</div><div class="stage"><svg id="attsvg" viewBox="0 0 240 150"></svg></div><div class="cap">every token weighs every other</div></div>
+      <div class="cell" id="p_ctx"><div class="ttl">4 · context window</div><div class="stage"><svg id="ctxsvg" viewBox="0 0 240 150"></svg></div><div class="cap">the only working memory</div></div>
+    </div>
+  </div></section>
+
+  <!-- 5 DISCUSS reasoning -->
+  <section class="page"><div class="wrap">
+    <div class="eyebrow"><span class="num">§3</span> discuss <span class="pill g">committed</span> <span class="hintlbl">— space reveals a take</span></div>
+    <h1 style="font-size:clamp(1.8rem,4.2vw,3.1rem);max-width:18ch">If it's just prediction, why does it feel like <span class="signal">reasoning</span>?</h1>
+    <div class="take reveal" id="take5"><span class="lbl">one take — after they answer</span>To predict the next token in a math proof, or the next move in a described game, you have to model the thing being described. Push prediction hard enough and it has to build internal structure. "Reasoning" may be what good-enough prediction looks like from the outside.</div>
+  </div></section>
+
+  <!-- 6 TRAINING -->
+  <section class="page"><div class="wrap">
+    <div class="eyebrow"><span class="num">§4</span> training &amp; cost <span class="hintlbl">— space steps the pipeline</span></div>
+    <div class="pipe fig" id="pipe">
+      <div class="pstage" data-i="0"><div class="n">STAGE 1</div><h4>Pretraining</h4><p>read basically everything</p></div>
+      <div class="parr">→</div>
+      <div class="pstage" data-i="1"><div class="n">STAGE 2</div><h4>Fine-tuning</h4><p>shape the behaviour</p></div>
+      <div class="parr">→</div>
+      <div class="pstage" data-i="2"><div class="n">STAGE 3</div><h4>RLHF</h4><p>align to humans</p></div>
+    </div>
+    <div class="calc">
+      <div style="font-family:var(--mono);color:var(--mist);font-size:.82rem">cost ≈ params × tokens × passes — drag the knobs</div>
+      <div class="slider"><label>parameters</label><input type="range" id="s_p" min="1" max="2000" value="175"><span class="val" id="v_p">175 B</span></div>
+      <div class="slider"><label>training tokens</label><input type="range" id="s_t" min="1" max="50" value="15"><span class="val" id="v_t">15 T</span></div>
+      <div class="slider"><label>passes</label><input type="range" id="s_e" min="1" max="10" value="1"><span class="val" id="v_e">1</span></div>
+      <div class="costout" id="costout">≈ $17.5M</div>
+    </div>
+  </div></section>
+
+  <!-- 7 DETERMINISM -->
+  <section class="page"><div class="wrap">
+    <div class="eyebrow"><span class="num">§5</span> determinism <span class="pill d">live</span> <span class="hintlbl">— space steps the batch</span></div>
+    <h2>Same prompt, different answer.</h2>
+    <div class="detrow fig">
+      <div>
+        <div class="floatbox">
+          <div>1 · floats aren't associative — click to reorder:</div>
+          <div class="order" id="floatorder"></div>
+          <div>= <span class="res" id="floatres">0.6000000000000001</span></div>
+          <div class="hintc">tiny — but it compounds over billions of ops</div>
+        </div>
+      </div>
+      <div class="batchbox">
+        <div style="font-family:var(--mono);font-size:.78rem;color:var(--mist);margin-bottom:6px">2 · batching: your request shares the GPU</div>
+        <svg id="batchsvg" viewBox="0 0 300 170"></svg>
+        <div class="batchcap" id="batchcap">your prompt alone → stable output</div>
+      </div>
+    </div>
+    <p class="mono" style="color:var(--signal);font-size:.9rem;margin-top:14px">your output can depend on who else is hitting the API this millisecond</p>
+  </div></section>
+
+  <!-- 8 INTERPRETABILITY -->
+  <section class="page"><div class="wrap">
+    <div class="eyebrow"><span class="num">§6</span> failure modes · interpretability <span class="hintlbl">— space turns the dial</span></div>
+    <h2>We can find one concept inside — and turn it up.</h2>
+    <div class="clamp fig">
+      <div class="clampframe">Researchers isolated a single internal feature that fires on <b>one concept</b> — the Golden Gate Bridge. Crank that feature's strength up, and the model can't stop steering everything toward it. <b>Move the dial:</b></div>
+      <div class="dialrow"><span class="dlbl">bridge feature</span><input type="range" id="clampr" min="0" max="10" value="0"><span class="dval" id="clampv">strength 0</span></div>
+      <div class="clampout" id="clampout"></div>
+      <details><summary>▸ what does "a feature" mean?</summary><p>Inside the weights, concepts aren't stored in one neuron — they're directions in a high-dimensional space. Interpretability work pulls these directions out as named "features" (a bridge, a bug in code, sycophancy). You can read them, and you can amplify one. We know the mechanics exactly; reading the trained weights is the hard, unfinished part.</p></details>
+    </div>
+  </div></section>
+
+  <!-- 9 AGENTS -->
+  <section class="page"><div class="wrap">
+    <div class="eyebrow"><span class="num">§7</span> agents &amp; Claude Code <span class="hintlbl">— space steps the loop</span></div>
+    <h2>The model didn't change. The <span class="signal">loop</span> is the magic.</h2>
+    <div class="agentwrap fig">
+      <svg class="loopsvg" id="loopsvg" viewBox="0 0 260 220"></svg>
+      <div class="term" id="agentterm"></div>
+    </div>
+  </div></section>
+
+  <!-- 10 DISCUSS ceiling -->
+  <section class="page"><div class="wrap">
+    <div class="eyebrow"><span class="num">§7</span> discuss <span class="pill g">committed</span> <span class="hintlbl">— space reveals a take</span></div>
+    <h1 style="font-size:clamp(1.8rem,4.2vw,3.1rem);max-width:20ch">If the model isn't smarter — just looped — what's the <span class="signal">ceiling</span>?</h1>
+    <div class="take reveal" id="take10"><span class="lbl">one take — after they answer</span>The ceiling isn't the model's raw intelligence — it's the harness: which tools it can call, how fast errors compound, how much context it can hold before it forgets. Better scaffolding moves the ceiling more than a slightly smarter model does.</div>
+  </div></section>
+
+  <!-- 11 HARD QUESTIONS -->
+  <section class="page"><div class="wrap">
+    <div class="eyebrow"><span class="num">§8</span> hard questions <span class="hintlbl">— click or space to reveal</span></div>
+    <div class="qas fig" id="qas">
+      <div class="qa"><span class="q">Conscious?</span><span class="a">No definition. No test.</span></div>
+      <div class="qa"><span class="q">Understanding?</span><span class="a">Chinese Room vs stochastic parrot.</span></div>
+      <div class="qa"><span class="q">Why did scaling work?</span><span class="a">Nobody predicted it.</span></div>
+      <div class="qa"><span class="q">Agents &amp; risk?</span><span class="a">What changes when they act?</span></div>
+    </div>
+  </div></section>
+
+  <!-- 12 MENTAL MODEL -->
+  <section class="page"><div class="wrap">
+    <div class="eyebrow"><span class="num">§9</span> wrap-up <span class="hintlbl">— space reveals</span></div>
+    <h1 id="mmq" style="font-size:clamp(1.8rem,4vw,3rem);max-width:20ch">So — what should our mental model of an LLM be?</h1>
+    <div class="reveal" id="mmans" style="display:flex;flex-direction:column;align-items:center;margin-top:24px">
+      <div class="notlist">
+        <div id="not0">✗ not a database — <b>verify facts</b></div>
+        <div id="not1">✗ not a search engine — <b>don't trust recency</b></div>
+        <div id="not2">✗ not deterministic — <b>and now you know why</b></div>
+      </div>
+      <p class="intern reveal" id="internln">A well-read <span class="signal">intern</span> who confabulates confidently and has <span class="signal">no memory</span> between meetings.</p>
+    </div>
+  </div></section>
+
+</div>
+
+<div class="dots" id="dots"></div>
+<div class="nav"><button id="prev">‹</button><button id="next">›</button></div>
+<div class="hint">← → slide · space animates</div>
+
+<script>
+const pages=[...document.querySelectorAll('.page')],N=pages.length;let cur=0;
+const dots=document.getElementById('dots');
+pages.forEach((_,k)=>{const b=document.createElement('button');b.onclick=()=>go(k);dots.appendChild(b);});
+const dotEls=[...dots.children];
+function go(n){n=Math.max(0,Math.min(N-1,n));pages.forEach((p,k)=>p.classList.toggle('prev',k<n));
+  pages[cur].classList.remove('active');cur=n;pages[cur].classList.add('active');pages[cur].classList.remove('prev');
+  dotEls.forEach((d,k)=>d.classList.toggle('on',k===cur));
+  document.getElementById('prog').style.width=((cur+1)/N*100)+'%';
+  document.getElementById('pageno').textContent=String(cur+1).padStart(2,'0');enter(cur);}
+document.getElementById('next').onclick=()=>go(cur+1);
+document.getElementById('prev').onclick=()=>go(cur-1);
+addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'){e.preventDefault();go(cur+1);}
+  else if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}
+  else if(e.key===' '||e.key==='Spacebar'){e.preventDefault();(advancers[cur]||function(){})();}
+  else if(e.key==='Home')go(0);else if(e.key==='End')go(N-1);});
+let sx=0;addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});
+addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-sx;if(Math.abs(d)>50)go(cur+(d<0?1:-1));},{passive:true});
+
+/* ===== title ambient ===== */
+(function(){const cv=document.getElementById('titlecv'),x=cv.getContext('2d');let w,h,pts;
+function rs(){w=cv.width=cv.offsetWidth;h=cv.height=cv.offsetHeight;pts=[...Array(42)].map(()=>({x:Math.random()*w,y:Math.random()*h,v:.2+Math.random()*.5}));}
+rs();addEventListener('resize',rs);
+(function loop(){x.clearRect(0,0,w,h);pts.forEach(p=>{p.y-=p.v;if(p.y<0){p.y=h;p.x=Math.random()*w;}
+  x.fillStyle='rgba(255,138,61,'+(p.v*.5)+')';x.fillRect(p.x,p.y,3,3);});requestAnimationFrame(loop);})();})();
+
+/* ===== hook ===== */
+let hookStarted=false;
+function hookAnim(){const cv=document.getElementById('hookcv'),x=cv.getContext('2d');
+  const labels=['Netflix','Maps ETA','autocomplete','spam filter','face unlock','Translate','search ranking','recommendations','voice assistant','photo tagging','fraud check','route planning','feed ranking','ad targeting'];
+  let w,h,nodes,edges;
+  function place(){w=cv.width=cv.offsetWidth;h=cv.height=cv.offsetHeight;const cx=w/2,cy=h/2;
+    const rx=w*0.34,ry=h*0.40;
+    nodes=labels.map((l,i)=>{const a=(i/labels.length)*Math.PI*2-Math.PI/2;const f=(i%2)?1:0.6;
+      return{l,x:cx+rx*f*Math.cos(a),y:cy+ry*f*Math.sin(a),right:Math.cos(a)>=0,on:0,t:i*110};});
+    edges=[];nodes.forEach((n,i)=>{const near=nodes.map((m,j)=>({j,d:(m.x-n.x)**2+(m.y-n.y)**2})).filter(o=>o.j!==i).sort((a,b)=>a.d-b.d);
+      [0,1].forEach(k=>{const j=near[k].j;if(!edges.some(e=>e.a===j&&e.b===i))edges.push({a:i,b:j,t:Math.max(nodes[i].t,nodes[j].t)+160});});});}
+  place();const cnum=document.getElementById('cnum');let start=performance.now(),shown=-1;
+  (function loop(now){x.clearRect(0,0,w,h);const el=now-start;
+    edges.forEach(e=>{const A=nodes[e.a],B=nodes[e.b],p=Math.min(1,Math.max(0,(el-e.t)/420));
+      if(p>0){x.strokeStyle='rgba(255,138,61,'+(p*0.26)+')';x.lineWidth=1;x.beginPath();x.moveTo(A.x,A.y);x.lineTo(B.x,B.y);x.stroke();}});
+    nodes.forEach(n=>{if(el>n.t&&n.on<1)n.on=Math.min(1,n.on+.08);
+      if(n.on>0){x.beginPath();x.arc(n.x,n.y,4.5,0,7);x.fillStyle='rgba(255,138,61,'+n.on+')';x.fill();
+        x.font='600 13px Space Grotesk';x.fillStyle='rgba(234,238,244,'+(n.on*.96)+')';
+        x.textAlign=n.right?'left':'right';x.fillText(n.l,n.x+(n.right?9:-9),n.y+4);}});
+    const c=nodes.filter(n=>n.on>.5).length;if(c!==shown){shown=c;cnum.textContent=c<10?'0'+c:c;}
+    if(cur===1&&el<3200)requestAnimationFrame(loop);})(start);}
+function hookStart(){if(!hookStarted){hookStarted=true;}hookAnim();}
+
+/* ===== rings with mini diagrams ===== */
+const ringMini={
+0:`<svg viewBox='0 0 200 110'><rect x='8' y='44' width='44' height='24' rx='4' fill='#1D2630' stroke='#2C3744'/><text x='30' y='60' fill='#8C9AAB' font-family='JetBrains Mono' font-size='9' text-anchor='middle'>input</text><path d='M52 56 H78' stroke='#2C3744' marker-end='url(#a)'/><path d='M100 38 L128 56 L100 74 L72 56 Z' fill='#161D27' stroke='#FF8A3D'/><text x='100' y='59' fill='#FF8A3D' font-family='JetBrains Mono' font-size='9' text-anchor='middle'>if?</text><path d='M128 56 H152' stroke='#2C3744' marker-end='url(#a)'/><rect x='152' y='30' width='40' height='20' rx='4' fill='#1D2630' stroke='#2C3744'/><text x='172' y='44' fill='#8C9AAB' font-family='JetBrains Mono' font-size='8' text-anchor='middle'>then A</text><rect x='152' y='62' width='40' height='20' rx='4' fill='#1D2630' stroke='#2C3744'/><text x='172' y='76' fill='#8C9AAB' font-family='JetBrains Mono' font-size='8' text-anchor='middle'>else B</text><defs><marker id='a' markerWidth='7' markerHeight='7' refX='5' refY='3' orient='auto'><path d='M0,0 L5,3 L0,6' fill='#8C9AAB'/></marker></defs></svg>`,
+1:`<svg viewBox='0 0 200 110'><circle cx='100' cy='20' r='9' fill='#161B22' stroke='#FF8A3D'/><line x1='92' y1='27' x2='55' y2='52' stroke='#2C3744'/><line x1='108' y1='27' x2='145' y2='52' stroke='#2C3744'/><circle cx='52' cy='58' r='8' fill='#1D2630' stroke='#2C3744'/><circle cx='148' cy='58' r='8' fill='#1D2630' stroke='#2C3744'/><line x1='46' y1='64' x2='28' y2='88' stroke='#2C3744'/><line x1='58' y1='64' x2='76' y2='88' stroke='#2C3744'/><line x1='142' y1='64' x2='124' y2='88' stroke='#2C3744'/><line x1='154' y1='64' x2='172' y2='88' stroke='#2C3744'/><circle cx='26' cy='94' r='7' fill='#1D2630' stroke='#5BC9D6'/><circle cx='78' cy='94' r='7' fill='#1D2630' stroke='#5BC9D6'/><circle cx='122' cy='94' r='7' fill='#1D2630' stroke='#5BC9D6'/><circle cx='174' cy='94' r='7' fill='#1D2630' stroke='#5BC9D6'/><text x='100' y='108' fill='#8C9AAB' font-family='JetBrains Mono' font-size='8' text-anchor='middle'>decision tree</text></svg>`,
+2:`<svg viewBox='0 0 200 110'>${netGraph()}</svg>`,
+3:`<svg viewBox='0 0 200 110'><rect x='56' y='12' width='88' height='22' rx='4' fill='#161D27' stroke='#FF8A3D'/><text x='100' y='27' fill='#FF8A3D' font-family='JetBrains Mono' font-size='9' text-anchor='middle'>attention</text><path d='M100 34 V46' stroke='#8C9AAB' marker-end='url(#tf)'/><rect x='56' y='46' width='88' height='22' rx='4' fill='#161D27' stroke='#5BC9D6'/><text x='100' y='61' fill='#5BC9D6' font-family='JetBrains Mono' font-size='9' text-anchor='middle'>feed-forward</text><path d='M52 23 Q34 40 52 57' stroke='#2C3744' fill='none' stroke-dasharray='3 3'/><text x='38' y='44' fill='#2C3744' font-family='JetBrains Mono' font-size='7' text-anchor='middle' transform='rotate(-90 38 44)'>residual</text><text x='100' y='90' fill='#8C9AAB' font-family='JetBrains Mono' font-size='8' text-anchor='middle'>one transformer block, stacked ×N</text><defs><marker id='tf' markerWidth='7' markerHeight='7' refX='5' refY='3' orient='auto'><path d='M0,0 L5,3 L0,6' fill='#8C9AAB'/></marker></defs></svg>`,
+4:`<svg viewBox='0 0 200 110'><g>${[0,1,2].map(i=>`<rect x='${60}' y='${18+i*20}' width='80' height='15' rx='3' fill='#161D27' stroke='#2C3744'/><text x='100' y='${29+i*20}' fill='#8C9AAB' font-family='JetBrains Mono' font-size='8' text-anchor='middle'>transformer block</text>`).join('')}</g><path d='M100 78 V90' stroke='#FF8A3D' marker-end='url(#b)'/><rect x='62' y='90' width='76' height='16' rx='3' fill='rgba(255,138,61,.16)' stroke='#FF8A3D'/><text x='100' y='102' fill='#FF8A3D' font-family='JetBrains Mono' font-size='8' text-anchor='middle'>next token</text><defs><marker id='b' markerWidth='7' markerHeight='7' refX='5' refY='3' orient='auto'><path d='M0,0 L5,3 L0,6' fill='#FF8A3D'/></marker></defs></svg>`};
+function netGraph(){let s='';const L=[[20],[55,55,55],[100,100,100],[145]];const xs=[30,80,130,180];const ys=[[55],[30,55,80],[30,55,80],[55]];
+  for(let l=0;l<3;l++)for(let a=0;a<ys[l].length;a++)for(let b=0;b<ys[l+1].length;b++)s+=`<line x1='${xs[l]}' y1='${ys[l][a]}' x2='${xs[l+1]}' y2='${ys[l+1][b]}' stroke='#2C3744' stroke-width='.6'/>`;
+  for(let l=0;l<4;l++)for(let a=0;a<ys[l].length;a++){const c=l===0?'#5BC9D6':(l===3?'#FF8A3D':'#2C3744');s+=`<circle cx='${xs[l]}' cy='${ys[l][a]}' r='5' fill='#1D2630' stroke='${c}'/>`;}
+  return s+`<text x='100' y='105' fill='#8C9AAB' font-family='JetBrains Mono' font-size='8' text-anchor='middle'>neural net: layers of weights</text>`;}
+const ringData=[
+  {tag:'AI · outer ring',give:'Humans encode the logic.',wall:'Wall: you <b>can\'t write the rulebook</b> for "is this a cat?"',det:'Rules, search, expert systems — Deep Blue, ELIZA. Every behaviour is hand-written by a programmer. Powerful where the rules are knowable, useless where they aren\'t.'},
+  {tag:'Machine learning',give:'Humans pick features. Machines learn the weights.',wall:'Wall: <b>feature engineering</b> is slow and domain-specific.',det:'Regression, random forests, XGBoost — spam filters, credit scoring. We still decide what to measure; the machine only tunes how much each thing matters. Still beats deep learning on tabular data today.'},
+  {tag:'Deep learning',give:'Machines find the features themselves.',wall:'Wall: <b>one model, one task.</b>',det:'CNNs, RNNs, GANs — AlexNet (2012) was the hinge. Raw pixels in, learned features out, no hand-engineering. But each model was trained for a single job.'},
+  {tag:'Transformers',give:'A stack of attention + feed-forward blocks.',wall:'Won: parallel on GPUs, long-range context, any modality.',det:'A transformer is a tall stack of identical blocks. Each block does two things: an <b>attention</b> step, where every token gathers information from every other token, then a small <b>feed-forward network</b> that processes each token on its own. Residual connections carry signal up the stack, and because attention sees the whole sequence at once, the entire thing runs in parallel on a GPU — which is why it scales. "Attention Is All You Need" (2017); BERT, GPT, ViT and Whisper are all this same machine.'},
+  {tag:'LLMs · inner ring',give:'Transformers + planetary scale + alignment.',wall:'Where you live every day — GPT, Claude, Gemini.',det:'The Bitter Lesson (Sutton, 2019): methods that leverage raw compute beat human-crafted cleverness, eventually. LLMs are that lesson taken to its limit — scale the transformer, align it, and capabilities emerge.'}];
+function showRing(i){const d=ringData[i];
+  document.getElementById('ringpanel').innerHTML=
+    '<div class="tag">'+d.tag+'</div><h3>'+d.give+'</h3>'+
+    '<div class="ringmini">'+ringMini[i]+'</div>'+
+    '<div class="wall">'+d.wall+'</div>'+
+    '<p class="ringdet">'+d.det+'</p>';
+  document.querySelectorAll('#ringsvg circle').forEach(c=>{const on=+c.dataset.i===i;
+    c.setAttribute('stroke',on?'#FF8A3D':'#2C3744');c.setAttribute('stroke-width',on?'2.5':'1.5');
+    if(+c.dataset.i===4)c.setAttribute('fill','rgba(255,138,61,'+(on?.3:.16)+')');});
+  document.querySelectorAll('#ringsvg text').forEach(t=>t.setAttribute('fill',(+t.dataset.t===i||+t.dataset.t===4)?'#FF8A3D':'#8C9AAB'));
+  ringCur=i;}
+let ringCur=0;
+document.getElementById('ringsvg').addEventListener('click',e=>{const i=e.target.dataset.i||e.target.dataset.t;if(i!==undefined)showRing(+i);});
+document.querySelectorAll('#ringsvg circle,#ringsvg text').forEach(el=>el.style.cursor='pointer');
+
+/* ===== next-token + net ===== */
+const ntpSteps=[
+  {ctx:['The'],dist:[['cat',.34],['sun',.17],['city',.14],['idea',.11],['model',.09]]},
+  {ctx:['The','cat'],dist:[['sat',.41],['ran',.19],['slept',.13],['jumped',.10],['was',.08]]},
+  {ctx:['The','cat','sat'],dist:[['on',.52],['quietly',.16],['down',.12],['near',.09],['by',.06]]},
+  {ctx:['The','cat','sat','on'],dist:[['the',.71],['a',.14],['its',.06],['my',.05],['his',.03]]},
+  {ctx:['The','cat','sat','on','the'],dist:[['mat',.38],['floor',.21],['roof',.13],['sofa',.11],['edge',.08]]},
+  {ctx:['The','cat','sat','on','the','mat'],dist:[['.',.62],[',',.18],['and',.11],['then',.05],['while',.03]]}];
+let ntpi=0;
+function buildNet(){const s=document.getElementById('netsvg');const xs=[34,90,150,190];const ys=[[50,100,150],[40,80,120,160],[40,80,120,160],[100]];
+  let h='';for(let l=0;l<3;l++)for(let a=0;a<ys[l].length;a++)for(let b=0;b<ys[l+1].length;b++)h+=`<line class='edge' data-l='${l}' x1='${xs[l]}' y1='${ys[l][a]}' x2='${xs[l+1]}' y2='${ys[l+1][b]}'/>`;
+  for(let l=0;l<4;l++)for(let a=0;a<ys[l].length;a++){const cls=l===0?'nd in':(l===3?'nd out':'nd');h+=`<circle class='${cls}' cx='${xs[l]}' cy='${ys[l][a]}' r='6'/>`;}
+  s.innerHTML=h;}
+function pulseNet(){const edges=document.querySelectorAll('#netsvg .edge');edges.forEach(e=>e.classList.remove('pulse'));
+  [0,1,2].forEach(l=>setTimeout(()=>document.querySelectorAll("#netsvg .edge[data-l='"+l+"']").forEach(e=>e.classList.add('pulse')),l*220));}
+function ntpRender(){const st=ntpSteps[ntpi];
+  document.getElementById('ntpsent').innerHTML=st.ctx.map(w=>'<span>'+w+'</span>').join(' ')+' <span class="cursor">▮</span>';
+  const bars=document.getElementById('ntpbars');bars.innerHTML='';
+  st.dist.forEach((d,k)=>{const row=document.createElement('div');row.className='bar'+(k===0?' top':'');
+    row.innerHTML='<span class="tok">'+(d[0]==='.'?'"."':d[0])+'</span><div class="track"><div class="fill"></div></div><span class="pct">'+Math.round(d[1]*100)+'%</span>';
+    bars.appendChild(row);requestAnimationFrame(()=>row.querySelector('.fill').style.width=(d[1]*100)+'%');});}
+function ntpAdvance(){if(ntpi<ntpSteps.length-1){ntpi++;pulseNet();setTimeout(ntpRender,300);}}
+
+/* ===== four pieces (all visible, richer staged animations) ===== */
+let pieceStep=-1,ctxTimer=null;
+function tokDefault(){document.getElementById('tokchips').innerHTML='<span class="chip on">strawberry</span>';}
+function tokAnim(){const c=document.getElementById('tokchips');
+  c.innerHTML='<span class="chip on" id="fullw">strawberry</span>';
+  const full=document.getElementById('fullw');
+  setTimeout(()=>{full.style.background='var(--signal)';full.style.color='#0A0E14';},250);
+  setTimeout(()=>{c.innerHTML='';['straw','berry'].forEach((t,i)=>{const e=document.createElement('span');e.className='chip';e.textContent=t;c.appendChild(e);setTimeout(()=>e.classList.add('on'),100+i*420);});},900);}
+function embDefault(){document.getElementById('embsvg').innerHTML="<text x='120' y='78' fill='#3a4654' font-family='JetBrains Mono' font-size='9' text-anchor='middle'>vectors in space</text>";}
+function embAnim(){const s=document.getElementById('embsvg');const P={man:[55,120],king:[55,34],woman:[185,120],queen:[185,34]};
+  function pt(n,c,d){const[x,y]=P[n];const r=(n==='woman'||n==='queen');return `<circle cx='${x}' cy='${y}' r='4.5' fill='${c}' opacity='0'><animate attributeName='opacity' to='1' dur='.25s' begin='${d}s' fill='freeze'/></circle><text x='${x+(r?9:-9)}' y='${y+4}' fill='${c}' font-family='JetBrains Mono' font-size='11' text-anchor='${r?'start':'end'}' opacity='0'>${n}<animate attributeName='opacity' to='1' dur='.25s' begin='${d}s' fill='freeze'/></text>`;}
+  function arr(a,b,c,d,dash){const[x1,y1]=P[a],[x2,y2]=P[b];return `<line x1='${x1}' y1='${y1}' x2='${x2}' y2='${y2}' stroke='${c}' stroke-width='1.6'${dash?" stroke-dasharray='4 4'":''} marker-end='url(#eh)' opacity='0'><animate attributeName='opacity' to='1' dur='.4s' begin='${d}s' fill='freeze'/></line>`;}
+  s.innerHTML="<defs><marker id='eh' markerWidth='8' markerHeight='8' refX='6' refY='3' orient='auto'><path d='M0,0 L6,3 L0,6' fill='#5BC9D6'/></marker></defs>"
+    +pt('man','#8C9AAB',0)
+    +pt('king','#FF8A3D',.4)+arr('man','king','#5BC9D6',.5)
+    +pt('woman','#8C9AAB',1.1)+arr('man','woman','#5BC9D6',1.2)
+    +pt('queen','#FF8A3D',1.9)+arr('king','queen','#2C3744',1.9,1)+arr('woman','queen','#2C3744',1.9,1)
+    +"<text x='120' y='100' fill='#5BC9D6' font-family='JetBrains Mono' font-size='8' text-anchor='middle' opacity='0'>king + (woman − man) ≈ queen<animate attributeName='opacity' to='1' dur='.3s' begin='2.4s' fill='freeze'/></text>";}
+function attDefault(){const xs=[34,90,142,190];document.getElementById('attsvg').innerHTML=['The','cat','sat','on'].map((t,i)=>`<text x='${xs[i]}' y='42' fill='#8C9AAB' font-family='JetBrains Mono' font-size='12' text-anchor='middle'>${t}</text>`).join('');}
+function attAnim(){const s=document.getElementById('attsvg');const toks=['The','cat','sat','on'];const xs=[34,90,142,190];const y=42;
+  let h=toks.map((t,i)=>`<text x='${xs[i]}' y='${y}' fill='#EAEEF4' font-family='JetBrains Mono' font-size='12' text-anchor='middle'>${t}</text>`).join('');
+  let d=0.3;for(let i=1;i<toks.length;i++)for(let j=0;j<i;j++){const x1=xs[i],x2=xs[j],mx=(x1+x2)/2,dip=y+18+(i-j)*16;
+    h+=`<path d='M${x1} ${y+8} Q ${mx} ${dip} ${x2} ${y+8}' fill='none' stroke='#FF8A3D' stroke-width='1.3' opacity='0'><animate attributeName='opacity' to='${(0.35+0.5/(i-j)).toFixed(2)}' dur='.3s' begin='${d.toFixed(2)}s' fill='freeze'/></path>`;d+=0.34;}
+  h+=`<text x='120' y='142' fill='#8C9AAB' font-family='JetBrains Mono' font-size='8' text-anchor='middle'>each token attends to the ones before it</text>`;s.innerHTML=h;}
+function ctxDefault(){document.getElementById('ctxsvg').innerHTML="<rect x='8' y='46' width='224' height='40' rx='8' fill='rgba(255,138,61,.05)' stroke='#2C3744'/><text x='120' y='70' fill='#3a4654' font-family='JetBrains Mono' font-size='9' text-anchor='middle'>a fixed-size window</text>";}
+const ctxWords=['neural','nets','learn','to','predict','the','next','token','from','data','at','scale'];
+function ctxAnim(){const s=document.getElementById('ctxsvg');let idx=0;const cap=6;
+  function frame(){const win=[];for(let k=0;k<cap;k++)win.push(ctxWords[(idx+k)%ctxWords.length]);
+    let h="<rect x='8' y='46' width='224' height='40' rx='8' fill='rgba(255,138,61,.08)' stroke='#FF8A3D'/><text x='120' y='34' fill='#FF8A3D' font-family='JetBrains Mono' font-size='8' text-anchor='middle'>window slides as new tokens arrive</text>";
+    win.forEach((wd,k)=>{const op=k===0?0.3:(k===cap-1?1:0.8),st=k===cap-1?'#FF8A3D':'#2C3744';
+      h+=`<rect x='${14+k*36}' y='53' width='32' height='26' rx='5' fill='#1D2630' stroke='${st}' opacity='${op}'/><text x='${30+k*36}' y='70' fill='#8C9AAB' font-family='JetBrains Mono' font-size='7' text-anchor='middle' opacity='${op}'>${wd}</text>`;});
+    s.innerHTML=h;idx=(idx+1)%ctxWords.length;}
+  frame();clearInterval(ctxTimer);ctxTimer=setInterval(frame,950);}
+const pieceCells=['p_tok','p_emb','p_att','p_ctx'],pieceFns=[tokAnim,embAnim,attAnim,ctxAnim];
+function piecesAdvance(){pieceStep=(pieceStep+1)%4;pieceCells.forEach((id,i)=>document.getElementById(id).classList.toggle('active',i===pieceStep));
+  if(pieceStep!==3){clearInterval(ctxTimer);ctxTimer=null;}pieceFns[pieceStep]();}
+function piecesInit(){pieceStep=-1;clearInterval(ctxTimer);ctxTimer=null;
+  pieceCells.forEach(id=>document.getElementById(id).classList.remove('active'));
+  tokDefault();embDefault();attDefault();ctxDefault();}
+
+/* ===== training ===== */
+let pipeStep=-1;
+function trainAdvance(){pipeStep=(pipeStep+1)%3;document.querySelectorAll('#pipe .pstage').forEach((s,i)=>s.classList.toggle('on',i===pipeStep));}
+const sp=document.getElementById('s_p'),stk=document.getElementById('s_t'),se=document.getElementById('s_e');
+function calc(){const P=+sp.value,T=+stk.value,E=+se.value;
+  v_p.textContent=P+' B';v_t.textContent=T+' T';v_e.textContent=E;
+  const flops=6*P*1e9*T*1e12*E,dollars=flops/5e14/3600*2;
+  let str=dollars>1e9?'$'+(dollars/1e9).toFixed(1)+'B':dollars>1e6?'$'+(dollars/1e6).toFixed(1)+'M':'$'+Math.round(dollars/1e3)+'k';
+  costout.textContent='≈ '+str;}
+[sp,stk,se].forEach(s=>s.addEventListener('input',calc));
+
+/* ===== determinism ===== */
+const nums=[0.1,0.2,0.3];let order=[0,1,2];
+function floatRender(){const fo=document.getElementById('floatorder');
+  fo.innerHTML=order.map((idx,pos)=>'<span class="n" data-pos="'+pos+'">'+nums[idx]+'</span>'+(pos<2?'<span style="color:#8C9AAB">+</span>':'')).join('');
+  let acc=(nums[order[0]]+nums[order[1]])+nums[order[2]];
+  const r=document.getElementById('floatres');r.textContent=acc;r.className=(acc===0.6)?'eq':'res';
+  fo.querySelectorAll('.n').forEach(n=>n.onclick=()=>{const p=+n.dataset.pos;[order[p],order[(p+1)%3]]=[order[(p+1)%3],order[p]];floatRender();});}
+let batchStage=0;
+function drawBatch(){const s=document.getElementById('batchsvg');const me="<rect x='10' y='15' width='70' height='26' rx='6' fill='#1D2630' stroke='#5BC9D6'/><text x='45' y='32' fill='#5BC9D6' font-family='JetBrains Mono' font-size='10' text-anchor='middle'>\"2+2\"</text>";
+  const gpu="<rect x='110' y='10' width='80' height='150' rx='8' fill='#161D27' stroke='#2C3744'/><text x='150' y='150' fill='#8C9AAB' font-family='JetBrains Mono' font-size='8' text-anchor='middle'>GPU batch</text>";
+  let others='',out='';
+  if(batchStage===0){out="<rect x='220' y='15' width='70' height='26' rx='6' fill='#1D2630' stroke='#7BD88F'/><text x='255' y='32' fill='#7BD88F' font-family='JetBrains Mono' font-size='10' text-anchor='middle'>\"4\"</text>";
+    document.getElementById('batchcap').innerHTML='your prompt alone → <span style="color:#7BD88F">stable</span>';}
+  else{others="<rect x='10' y='55' width='70' height='22' rx='5' fill='#1D2630' stroke='#FF8A3D' opacity='.8'/><rect x='10' y='85' width='70' height='22' rx='5' fill='#1D2630' stroke='#FF8A3D' opacity='.8'/><rect x='10' y='115' width='70' height='22' rx='5' fill='#1D2630' stroke='#FF8A3D' opacity='.8'/><text x='45' y='133' fill='#8C9AAB' font-family='JetBrains Mono' font-size='7' text-anchor='middle'>others</text>";
+    out="<rect x='220' y='15' width='70' height='26' rx='6' fill='#1D2630' stroke='#FF8A3D'/><text x='255' y='32' fill='#FF8A3D' font-family='JetBrains Mono' font-size='9' text-anchor='middle'>\"four\"</text>";
+    document.getElementById('batchcap').innerHTML='batched with strangers → <span style="color:#FF8A3D">different bits</span>';}
+  s.innerHTML=me+others+gpu+out+"<path d='M80 28 H108' stroke='#2C3744'/><path d='M190 28 H218' stroke='#2C3744'/>";}
+function detAdvance(){batchStage=batchStage?0:1;drawBatch();}
+
+/* ===== interpretability dial ===== */
+const clampLevels=[
+  'Sure — here are three good weekend hikes nearby, with trail lengths and difficulty.',
+  'Sure — three weekend hikes. One has a lovely <span class="gg">bridge</span> view at the summit.',
+  'For a weekend you might walk near the <span class="gg">Golden Gate Bridge</span> — plus a couple of hikes close by.',
+  'Honestly, the <span class="gg">Golden Gate Bridge</span> is magnificent. You could hike, but really you should see the <span class="gg">Bridge</span>.',
+  'I am the <span class="gg">Golden Gate Bridge</span> — the fog, the towers, the orange span. I cannot stop thinking about the <span class="gg">Golden Gate Bridge</span>. Have you seen the <span class="gg">Bridge</span>?'];
+function clampRender(){const v=+document.getElementById('clampr').value;const idx=Math.min(4,Math.round(v/2.5));
+  document.getElementById('clampout').innerHTML=clampLevels[idx];document.getElementById('clampv').textContent='strength '+v;}
+document.getElementById('clampr').addEventListener('input',clampRender);
+function clampAdvance(){const r=document.getElementById('clampr');r.value=Math.min(10,+r.value+2.5);clampRender();}
+
+/* ===== agents loop (generate -> tool call -> result, repeat until no tool call) ===== */
+const phases=['generate','tool call','result'];
+function drawLoop(active){const s=document.getElementById('loopsvg');const pts=[[130,40],[210,150],[50,150]];
+  let h="<path d='M130 40 L210 150 L50 150 Z' fill='none' stroke='#2C3744' stroke-dasharray='3 5'/>";
+  h+="<defs><marker id='lp' markerWidth='8' markerHeight='8' refX='5' refY='3' orient='auto'><path d='M0,0 L6,3 L0,6' fill='#FF8A3D'/></marker></defs>";
+  phases.forEach((p,i)=>{const[x,y]=pts[i];const on=i===active;
+    h+=`<circle class='node' cx='${x}' cy='${y}' r='34' fill='${on?'rgba(255,138,61,.2)':'#161D27'}' stroke='${on?'#FF8A3D':'#2C3744'}' stroke-width='${on?2.5:1}'/>`;
+    h+=`<text x='${x}' y='${y+4}' fill='${on?'#FF8A3D':'#8C9AAB'}' font-family='JetBrains Mono' font-size='10.5' text-anchor='middle'>${p}</text>`;});
+  h+="<text x='130' y='108' fill='#8C9AAB' font-family='JetBrains Mono' font-size='8.5' text-anchor='middle'>↺ until no tool call</text>";s.innerHTML=h;}
+const agentSteps=[
+  {ph:0,l:"<span class='ph'>generate</span> model: \"inspect auth.js\" → calls a tool"},
+  {ph:1,l:"<span class='ph'>tool call</span> <span class='c'>read_file(\"auth.js\")</span>"},
+  {ph:2,l:"<span class='ph'>result</span> <span class='m'>← 48 lines returned</span>"},
+  {ph:0,l:"<span class='ph'>generate</span> model: \"null check missing — patch it\""},
+  {ph:1,l:"<span class='ph'>tool call</span> <span class='c'>edit_file(\"auth.js\", patch)</span>"},
+  {ph:2,l:"<span class='ph'>result</span> <span class='m'>← applied (+4 −1)</span>"},
+  {ph:0,l:"<span class='ph'>generate</span> model: \"run the suite\""},
+  {ph:1,l:"<span class='ph'>tool call</span> <span class='c'>run(\"npm test\")</span>"},
+  {ph:2,l:"<span class='ph'>result</span> <span class='ok'>← 13 passing · no more tool calls → done</span>"}];
+let agentI=0;
+function agentRender(){const t=document.getElementById('agentterm');
+  t.innerHTML=agentSteps.map((s,i)=>'<div class="l'+(i<=agentI?' on':'')+'">'+s.l+'</div>').join('');
+  drawLoop(agentSteps[agentI].ph);}
+function agentAdvance(){agentI=(agentI+1)%agentSteps.length;agentRender();}
+
+/* ===== reveal helpers ===== */
+function revealTake(id){document.getElementById(id).classList.add('on');}
+/* hard questions */
+let qaI=-1;const qaEls=()=>[...document.querySelectorAll('#qas .qa')];
+function hardAdvance(){const els=qaEls();
+  if(qaI>=els.length-1){els.forEach(e=>e.classList.remove('shown'));qaI=-1;return;}
+  qaI++;els[qaI].classList.add('shown');}
+qaEls().forEach((el,i)=>el.onclick=()=>el.classList.toggle('shown'));
+/* mental model */
+let mmStep=0;
+function mentalAdvance(){if(mmStep===0){document.getElementById('mmans').classList.add('on');
+    ['not0','not1','not2'].forEach((id,i)=>setTimeout(()=>document.getElementById(id).classList.add('on'),i*350));mmStep=1;}
+  else if(mmStep===1){document.getElementById('internln').classList.add('on');mmStep=2;}}
+
+/* ===== advancers + enter ===== */
+const advancers={1:hookStart,2:()=>showRing((ringCur+1)%5),3:ntpAdvance,4:piecesAdvance,5:()=>revealTake('take5'),
+  6:trainAdvance,7:detAdvance,8:clampAdvance,9:agentAdvance,10:()=>revealTake('take10'),11:hardAdvance,12:mentalAdvance};
+function enter(n){
+  if(n!==4&&ctxTimer){clearInterval(ctxTimer);ctxTimer=null;}
+  if(n===1)hookStart();
+  if(n===2&&!document.getElementById('ringpanel').innerHTML)showRing(0);
+  if(n===3){buildNet();ntpRender();}
+  if(n===4)piecesInit();
+  if(n===6){calc();}
+  if(n===7){floatRender();batchStage=0;drawBatch();}
+  if(n===8)clampRender();
+  if(n===9){agentI=0;agentRender();}
+  if(n===11){qaI=-1;qaEls().forEach(e=>e.classList.remove('shown'));}
+}
+showRing(0);calc();go(0);
+</script>
+</body>
+</html>
