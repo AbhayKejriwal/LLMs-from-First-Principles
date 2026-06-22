@@ -82,7 +82,40 @@ canvas{display:block}
 .ringpanel summary::-webkit-details-marker{display:none}
 .ringpanel details p{font-size:.86rem;color:var(--mist);margin-top:8px;line-height:1.5}
 
-/* next-token + net */
+/* timeline */
+.tl{position:relative;width:100%;max-width:1000px;margin-top:24px}
+.tlnodes{display:flex;justify-content:space-between;overflow-x:auto;padding:6px 4px 4px;scrollbar-width:none;gap:4px}
+.tlnodes::-webkit-scrollbar{display:none}
+.tlnode{flex:0 0 auto;width:72px;display:flex;flex-direction:column;align-items:center;cursor:pointer;opacity:.22;transition:.4s;position:relative}
+.tlnode.shown{opacity:1}
+.tlnode .yr{font-family:var(--mono);font-size:.68rem;color:var(--mist);margin-bottom:7px}
+.tlnode .pt{width:13px;height:13px;border-radius:50%;border:2px solid;background:var(--ink);transition:.3s;z-index:2}
+.tlnode.cur .pt{transform:scale(1.6);box-shadow:0 0 16px currentColor}
+.tlnode .nm{font-size:.6rem;color:var(--mist);margin-top:8px;text-align:center;line-height:1.2}
+.tlnode.cur .nm{color:var(--paper)}
+.tlnode:not(:last-child)::after{content:'';position:absolute;top:32px;left:50%;width:100%;height:2px;background:var(--line);z-index:0}
+.tlcard{margin-top:16px;width:100%;max-width:72ch;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;text-align:left;min-height:120px;transition:.3s;display:flex;gap:18px;align-items:center}
+.tlcard .txt{flex:1}
+.tlcard .dia{flex:0 0 152px;height:104px}
+.tlcard .dia svg{width:100%;height:100%}
+.tlcard .tg{font-family:var(--mono);font-size:.6rem;letter-spacing:.13em;text-transform:uppercase}
+.tlcard h3{font-size:1.3rem;margin:5px 0 6px}
+.tlcard p{color:var(--mist);font-size:.94rem;line-height:1.5}
+.tlref{display:inline-block;margin-top:11px;font-family:var(--mono);font-size:.66rem;color:var(--mist);text-decoration:none;border-bottom:1px dashed var(--line);padding-bottom:1px}
+.tlref:hover{color:var(--signal);border-color:var(--signal)}
+.tlref.nolink{border:none;cursor:default}
+@media(max-width:560px){.tlcard{flex-direction:column;align-items:stretch}.tlcard .dia{flex:none;width:100%;height:96px}}
+.tllegend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:14px;font-family:var(--mono);font-size:.64rem;color:var(--mist)}
+.tllegend span{display:flex;align-items:center;gap:5px}.tllegend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.ntp3b{display:flex;flex-direction:column;gap:14px;width:100%;max-width:720px;margin:0 auto}
+.ntp3b .sentence{justify-content:center;border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:14px 16px;margin-bottom:0}
+.ntp3b .sentence .w.just{display:inline-block;animation:pop .45s cubic-bezier(.3,1.5,.5,1)}
+@keyframes pop{0%{transform:scale(.4) translateY(-8px);color:var(--signal)}100%{transform:none}}
+.disthead{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mist);text-align:left;margin-bottom:-4px}
+.bar.sampled .fill{box-shadow:0 0 20px var(--signal);background:var(--signal)}
+.bar.sampled .tok{color:var(--signal);font-weight:700}
+.bar.sampled .pct::after{content:' ◄';color:var(--signal)}
+.vocabnote{font-family:var(--mono);font-size:.72rem;color:var(--mist);opacity:.6;text-align:center;border-top:1px dashed var(--line);padding-top:10px}
 .ntp{display:grid;grid-template-columns:.85fr 1.15fr;gap:24px;width:100%;max-width:880px;align-items:center}
 .netsvg{width:100%;max-width:330px;margin:auto}
 .netsvg .edge{stroke:var(--line);stroke-width:1}
@@ -181,8 +214,21 @@ canvas{display:block}
 .notlist{display:flex;flex-direction:column;gap:11px;font-family:var(--mono);font-size:clamp(.9rem,1.5vw,1.1rem);color:var(--mist);margin-bottom:24px}
 .notlist div{opacity:0;transform:translateX(-12px);transition:.5s}.notlist div.on{opacity:1;transform:none}
 .notlist b{color:var(--paper)}
-.intern{font-size:clamp(1.5rem,3.3vw,2.6rem);line-height:1.25;max-width:22ch;font-weight:500;text-align:center}
+.closer{font-size:clamp(1.5rem,3.3vw,2.6rem);line-height:1.25;max-width:22ch;font-weight:500;text-align:center}
 
+.contact{display:flex;flex-direction:column;gap:15px;margin-top:24px;max-width:480px}
+.crow{display:flex;align-items:center;gap:15px;text-align:left}
+.crow.opt{opacity:.78}
+.ci{flex:none;width:40px;height:40px;border-radius:10px;border:1.5px solid;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:1rem;background:var(--panel)}
+.cl{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mist)}
+.cv{font-size:1.08rem;color:var(--paper);margin-top:2px}
+.contactnote{margin-top:26px;color:var(--mist);font-size:.9rem}
+.fb{display:flex;gap:34px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.qrcard{flex:none;width:196px;height:196px;background:#EAEEF4;border-radius:16px;padding:14px;box-shadow:0 10px 32px rgba(0,0,0,.45)}
+.fbtext{max-width:330px;text-align:left}
+.fbtext p{font-size:1.04rem;line-height:1.5}
+.fburl{font-family:var(--mono);font-size:.92rem;color:var(--signal);margin:14px 0;padding:8px 12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;display:inline-block}
+.fbq{display:flex;flex-direction:column;gap:6px;font-family:var(--mono);font-size:.8rem;color:var(--mist)}
 @media (max-width:760px){.ringsrow,.ntp,.detrow,.agentwrap{grid-template-columns:1fr}.grid4,.qas{grid-template-columns:1fr}.hint{display:none}.netsvg{max-width:260px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -190,7 +236,7 @@ canvas{display:block}
 <body>
 <div class="prog" id="prog"></div>
 <div class="hud tl">LLMs · First Principles</div>
-<div class="hud tr"><span id="pageno">01</span> / 13</div>
+<div class="hud tr"><span id="pageno">01</span> / 16</div>
 <div class="deck" id="deck">
 
   <!-- 0 TITLE -->
@@ -230,16 +276,27 @@ canvas{display:block}
     </div>
   </div></section>
 
-  <!-- 3 NEXT-TOKEN + NET -->
+  <!-- 3 TIMELINE -->
   <section class="page"><div class="wrap">
-    <div class="eyebrow"><span class="num">§3</span> what it actually does · the core <span class="hintlbl">— space predicts next</span></div>
+    <div class="eyebrow"><span class="num">§2</span> a short history — giving up control <span class="hintlbl">— space advances</span></div>
+    <h2>Sixty years, one direction.</h2>
+    <div class="tl fig"><div class="tlnodes" id="tlnodes"></div></div>
+    <div class="tlcard" id="tlcard"></div>
+    <div class="tllegend">
+      <span><i style="background:#8C9AAB"></i>AI</span><span><i style="background:#5BC9D6"></i>ML</span>
+      <span><i style="background:#7BD88F"></i>DL</span><span><i style="background:#FFB07A"></i>Transformers</span><span><i style="background:#FF8A3D"></i>LLM</span>
+    </div>
+  </div></section>
+
+  <!-- 4 NEXT-TOKEN -->
+  <section class="page"><div class="wrap">
+    <div class="eyebrow"><span class="num">§3</span> what it actually does · the core <span class="hintlbl">— space samples the next token</span></div>
     <h2>It predicts the next <span class="signal">token</span>.</h2>
-    <div class="ntp fig">
-      <svg class="netsvg" id="netsvg" viewBox="0 0 200 200"></svg>
-      <div>
-        <div class="sentence" id="ntpsent"></div>
-        <div class="bars" id="ntpbars"></div>
-      </div>
+    <div class="ntp3b fig">
+      <div class="sentence" id="ntpsent"></div>
+      <div class="disthead">the model's probability for every possible next token</div>
+      <div class="bars" id="ntpbars"></div>
+      <div class="vocabnote" id="ntpvocab">…and ~50,000 other tokens, each with tiny probability</div>
     </div>
   </div></section>
 
@@ -319,7 +376,7 @@ canvas{display:block}
     <div class="eyebrow"><span class="num">§7</span> agents &amp; Claude Code <span class="hintlbl">— space steps the loop</span></div>
     <h2>The model didn't change. The <span class="signal">loop</span> is the magic.</h2>
     <div class="agentwrap fig">
-      <svg class="loopsvg" id="loopsvg" viewBox="0 0 260 220"></svg>
+      <svg class="loopsvg" id="loopsvg" viewBox="0 0 175 240"></svg>
       <div class="term" id="agentterm"></div>
     </div>
   </div></section>
@@ -352,7 +409,32 @@ canvas{display:block}
         <div id="not1">✗ not a search engine — <b>don't trust recency</b></div>
         <div id="not2">✗ not deterministic — <b>and now you know why</b></div>
       </div>
-      <p class="intern reveal" id="internln">A well-read <span class="signal">intern</span> who confabulates confidently and has <span class="signal">no memory</span> between meetings.</p>
+      <p class="closer reveal" id="closeln">Brilliant and well-read — but it <span class="signal">confabulates</span> confidently and keeps <span class="signal">no memory</span> between meetings.</p>
+    </div>
+  </div></section>
+
+  <!-- 13 CONTACT -->
+  <section class="page"><div class="wrap">
+    <div class="eyebrow"><span class="num">§10</span> stay in touch</div>
+    <h2>Let's keep talking.</h2>
+    <div class="contact">
+      <a class="crow" href="https://www.linkedin.com/in/abhaykejriwal/" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><span class="ci" style="color:#5BC9D6;border-color:#5BC9D6">in</span><div><div class="cl">LinkedIn</div><div class="cv">linkedin.com/in/abhaykejriwal</div></div></a>
+      <div class="crow"><span class="ci" style="color:#7BD88F;border-color:#7BD88F">T</span><div><div class="cl">Microsoft Teams</div><div class="cv">Message me any time — Abhay Kejriwal</div></div></div>
+    </div>
+    <p class="contactnote">Slides, the timeline references, and these links are all in the deck — happy to share.</p>
+  </div></section>
+
+  <!-- 14 FEEDBACK QR -->
+  <section class="page"><div class="wrap">
+    <div class="eyebrow"><span class="num">§11</span> anonymous feedback</div>
+    <h2>Worth 15 seconds?</h2>
+    <div class="fb fig">
+      <div class="qrcard"><svg viewBox='0 0 37 37' shape-rendering='crispEdges' style='width:100%;height:100%'><rect width='37' height='37' fill='#EAEEF4'/><g fill='#0E1117'><rect x='4' y='4' width='1' height='1'/><rect x='5' y='4' width='1' height='1'/><rect x='6' y='4' width='1' height='1'/><rect x='7' y='4' width='1' height='1'/><rect x='8' y='4' width='1' height='1'/><rect x='9' y='4' width='1' height='1'/><rect x='10' y='4' width='1' height='1'/><rect x='16' y='4' width='1' height='1'/><rect x='19' y='4' width='1' height='1'/><rect x='20' y='4' width='1' height='1'/><rect x='21' y='4' width='1' height='1'/><rect x='22' y='4' width='1' height='1'/><rect x='23' y='4' width='1' height='1'/><rect x='24' y='4' width='1' height='1'/><rect x='26' y='4' width='1' height='1'/><rect x='27' y='4' width='1' height='1'/><rect x='28' y='4' width='1' height='1'/><rect x='29' y='4' width='1' height='1'/><rect x='30' y='4' width='1' height='1'/><rect x='31' y='4' width='1' height='1'/><rect x='32' y='4' width='1' height='1'/><rect x='4' y='5' width='1' height='1'/><rect x='10' y='5' width='1' height='1'/><rect x='14' y='5' width='1' height='1'/><rect x='21' y='5' width='1' height='1'/><rect x='22' y='5' width='1' height='1'/><rect x='24' y='5' width='1' height='1'/><rect x='26' y='5' width='1' height='1'/><rect x='32' y='5' width='1' height='1'/><rect x='4' y='6' width='1' height='1'/><rect x='6' y='6' width='1' height='1'/><rect x='7' y='6' width='1' height='1'/><rect x='8' y='6' width='1' height='1'/><rect x='10' y='6' width='1' height='1'/><rect x='12' y='6' width='1' height='1'/><rect x='13' y='6' width='1' height='1'/><rect x='14' y='6' width='1' height='1'/><rect x='15' y='6' width='1' height='1'/><rect x='18' y='6' width='1' height='1'/><rect x='20' y='6' width='1' height='1'/><rect x='22' y='6' width='1' height='1'/><rect x='26' y='6' width='1' height='1'/><rect x='28' y='6' width='1' height='1'/><rect x='29' y='6' width='1' height='1'/><rect x='30' y='6' width='1' height='1'/><rect x='32' y='6' width='1' height='1'/><rect x='4' y='7' width='1' height='1'/><rect x='6' y='7' width='1' height='1'/><rect x='7' y='7' width='1' height='1'/><rect x='8' y='7' width='1' height='1'/><rect x='10' y='7' width='1' height='1'/><rect x='12' y='7' width='1' height='1'/><rect x='13' y='7' width='1' height='1'/><rect x='15' y='7' width='1' height='1'/><rect x='16' y='7' width='1' height='1'/><rect x='23' y='7' width='1' height='1'/><rect x='24' y='7' width='1' height='1'/><rect x='26' y='7' width='1' height='1'/><rect x='28' y='7' width='1' height='1'/><rect x='29' y='7' width='1' height='1'/><rect x='30' y='7' width='1' height='1'/><rect x='32' y='7' width='1' height='1'/><rect x='4' y='8' width='1' height='1'/><rect x='6' y='8' width='1' height='1'/><rect x='7' y='8' width='1' height='1'/><rect x='8' y='8' width='1' height='1'/><rect x='10' y='8' width='1' height='1'/><rect x='12' y='8' width='1' height='1'/><rect x='17' y='8' width='1' height='1'/><rect x='18' y='8' width='1' height='1'/><rect x='19' y='8' width='1' height='1'/><rect x='21' y='8' width='1' height='1'/><rect x='22' y='8' width='1' height='1'/><rect x='23' y='8' width='1' height='1'/><rect x='24' y='8' width='1' height='1'/><rect x='26' y='8' width='1' height='1'/><rect x='28' y='8' width='1' height='1'/><rect x='29' y='8' width='1' height='1'/><rect x='30' y='8' width='1' height='1'/><rect x='32' y='8' width='1' height='1'/><rect x='4' y='9' width='1' height='1'/><rect x='10' y='9' width='1' height='1'/><rect x='12' y='9' width='1' height='1'/><rect x='14' y='9' width='1' height='1'/><rect x='17' y='9' width='1' height='1'/><rect x='18' y='9' width='1' height='1'/><rect x='19' y='9' width='1' height='1'/><rect x='20' y='9' width='1' height='1'/><rect x='21' y='9' width='1' height='1'/><rect x='24' y='9' width='1' height='1'/><rect x='26' y='9' width='1' height='1'/><rect x='32' y='9' width='1' height='1'/><rect x='4' y='10' width='1' height='1'/><rect x='5' y='10' width='1' height='1'/><rect x='6' y='10' width='1' height='1'/><rect x='7' y='10' width='1' height='1'/><rect x='8' y='10' width='1' height='1'/><rect x='9' y='10' width='1' height='1'/><rect x='10' y='10' width='1' height='1'/><rect x='12' y='10' width='1' height='1'/><rect x='14' y='10' width='1' height='1'/><rect x='16' y='10' width='1' height='1'/><rect x='18' y='10' width='1' height='1'/><rect x='20' y='10' width='1' height='1'/><rect x='22' y='10' width='1' height='1'/><rect x='24' y='10' width='1' height='1'/><rect x='26' y='10' width='1' height='1'/><rect x='27' y='10' width='1' height='1'/><rect x='28' y='10' width='1' height='1'/><rect x='29' y='10' width='1' height='1'/><rect x='30' y='10' width='1' height='1'/><rect x='31' y='10' width='1' height='1'/><rect x='32' y='10' width='1' height='1'/><rect x='12' y='11' width='1' height='1'/><rect x='15' y='11' width='1' height='1'/><rect x='17' y='11' width='1' height='1'/><rect x='19' y='11' width='1' height='1'/><rect x='22' y='11' width='1' height='1'/><rect x='24' y='11' width='1' height='1'/><rect x='4' y='12' width='1' height='1'/><rect x='6' y='12' width='1' height='1'/><rect x='7' y='12' width='1' height='1'/><rect x='8' y='12' width='1' height='1'/><rect x='9' y='12' width='1' height='1'/><rect x='10' y='12' width='1' height='1'/><rect x='15' y='12' width='1' height='1'/><rect x='18' y='12' width='1' height='1'/><rect x='19' y='12' width='1' height='1'/><rect x='21' y='12' width='1' height='1'/><rect x='24' y='12' width='1' height='1'/><rect x='26' y='12' width='1' height='1'/><rect x='27' y='12' width='1' height='1'/><rect x='28' y='12' width='1' height='1'/><rect x='29' y='12' width='1' height='1'/><rect x='30' y='12' width='1' height='1'/><rect x='5' y='13' width='1' height='1'/><rect x='8' y='13' width='1' height='1'/><rect x='11' y='13' width='1' height='1'/><rect x='12' y='13' width='1' height='1'/><rect x='13' y='13' width='1' height='1'/><rect x='15' y='13' width='1' height='1'/><rect x='19' y='13' width='1' height='1'/><rect x='20' y='13' width='1' height='1'/><rect x='22' y='13' width='1' height='1'/><rect x='24' y='13' width='1' height='1'/><rect x='26' y='13' width='1' height='1'/><rect x='27' y='13' width='1' height='1'/><rect x='28' y='13' width='1' height='1'/><rect x='32' y='13' width='1' height='1'/><rect x='5' y='14' width='1' height='1'/><rect x='6' y='14' width='1' height='1'/><rect x='7' y='14' width='1' height='1'/><rect x='9' y='14' width='1' height='1'/><rect x='10' y='14' width='1' height='1'/><rect x='12' y='14' width='1' height='1'/><rect x='19' y='14' width='1' height='1'/><rect x='21' y='14' width='1' height='1'/><rect x='25' y='14' width='1' height='1'/><rect x='27' y='14' width='1' height='1'/><rect x='28' y='14' width='1' height='1'/><rect x='4' y='15' width='1' height='1'/><rect x='5' y='15' width='1' height='1'/><rect x='6' y='15' width='1' height='1'/><rect x='8' y='15' width='1' height='1'/><rect x='13' y='15' width='1' height='1'/><rect x='14' y='15' width='1' height='1'/><rect x='16' y='15' width='1' height='1'/><rect x='18' y='15' width='1' height='1'/><rect x='19' y='15' width='1' height='1'/><rect x='20' y='15' width='1' height='1'/><rect x='26' y='15' width='1' height='1'/><rect x='27' y='15' width='1' height='1'/><rect x='29' y='15' width='1' height='1'/><rect x='31' y='15' width='1' height='1'/><rect x='5' y='16' width='1' height='1'/><rect x='6' y='16' width='1' height='1'/><rect x='8' y='16' width='1' height='1'/><rect x='10' y='16' width='1' height='1'/><rect x='12' y='16' width='1' height='1'/><rect x='14' y='16' width='1' height='1'/><rect x='15' y='16' width='1' height='1'/><rect x='16' y='16' width='1' height='1'/><rect x='21' y='16' width='1' height='1'/><rect x='23' y='16' width='1' height='1'/><rect x='24' y='16' width='1' height='1'/><rect x='25' y='16' width='1' height='1'/><rect x='29' y='16' width='1' height='1'/><rect x='30' y='16' width='1' height='1'/><rect x='4' y='17' width='1' height='1'/><rect x='5' y='17' width='1' height='1'/><rect x='6' y='17' width='1' height='1'/><rect x='8' y='17' width='1' height='1'/><rect x='12' y='17' width='1' height='1'/><rect x='15' y='17' width='1' height='1'/><rect x='17' y='17' width='1' height='1'/><rect x='18' y='17' width='1' height='1'/><rect x='19' y='17' width='1' height='1'/><rect x='20' y='17' width='1' height='1'/><rect x='21' y='17' width='1' height='1'/><rect x='23' y='17' width='1' height='1'/><rect x='24' y='17' width='1' height='1'/><rect x='25' y='17' width='1' height='1'/><rect x='26' y='17' width='1' height='1'/><rect x='27' y='17' width='1' height='1'/><rect x='28' y='17' width='1' height='1'/><rect x='32' y='17' width='1' height='1'/><rect x='7' y='18' width='1' height='1'/><rect x='9' y='18' width='1' height='1'/><rect x='10' y='18' width='1' height='1'/><rect x='12' y='18' width='1' height='1'/><rect x='13' y='18' width='1' height='1'/><rect x='14' y='18' width='1' height='1'/><rect x='15' y='18' width='1' height='1'/><rect x='16' y='18' width='1' height='1'/><rect x='17' y='18' width='1' height='1'/><rect x='18' y='18' width='1' height='1'/><rect x='19' y='18' width='1' height='1'/><rect x='20' y='18' width='1' height='1'/><rect x='22' y='18' width='1' height='1'/><rect x='24' y='18' width='1' height='1'/><rect x='26' y='18' width='1' height='1'/><rect x='29' y='18' width='1' height='1'/><rect x='30' y='18' width='1' height='1'/><rect x='5' y='19' width='1' height='1'/><rect x='8' y='19' width='1' height='1'/><rect x='13' y='19' width='1' height='1'/><rect x='16' y='19' width='1' height='1'/><rect x='17' y='19' width='1' height='1'/><rect x='19' y='19' width='1' height='1'/><rect x='20' y='19' width='1' height='1'/><rect x='22' y='19' width='1' height='1'/><rect x='23' y='19' width='1' height='1'/><rect x='25' y='19' width='1' height='1'/><rect x='26' y='19' width='1' height='1'/><rect x='28' y='19' width='1' height='1'/><rect x='31' y='19' width='1' height='1'/><rect x='6' y='20' width='1' height='1'/><rect x='9' y='20' width='1' height='1'/><rect x='10' y='20' width='1' height='1'/><rect x='12' y='20' width='1' height='1'/><rect x='13' y='20' width='1' height='1'/><rect x='14' y='20' width='1' height='1'/><rect x='18' y='20' width='1' height='1'/><rect x='21' y='20' width='1' height='1'/><rect x='27' y='20' width='1' height='1'/><rect x='29' y='20' width='1' height='1'/><rect x='30' y='20' width='1' height='1'/><rect x='4' y='21' width='1' height='1'/><rect x='6' y='21' width='1' height='1'/><rect x='11' y='21' width='1' height='1'/><rect x='13' y='21' width='1' height='1'/><rect x='15' y='21' width='1' height='1'/><rect x='20' y='21' width='1' height='1'/><rect x='24' y='21' width='1' height='1'/><rect x='25' y='21' width='1' height='1'/><rect x='26' y='21' width='1' height='1'/><rect x='27' y='21' width='1' height='1'/><rect x='28' y='21' width='1' height='1'/><rect x='30' y='21' width='1' height='1'/><rect x='32' y='21' width='1' height='1'/><rect x='4' y='22' width='1' height='1'/><rect x='6' y='22' width='1' height='1'/><rect x='8' y='22' width='1' height='1'/><rect x='10' y='22' width='1' height='1'/><rect x='13' y='22' width='1' height='1'/><rect x='14' y='22' width='1' height='1'/><rect x='15' y='22' width='1' height='1'/><rect x='19' y='22' width='1' height='1'/><rect x='20' y='22' width='1' height='1'/><rect x='21' y='22' width='1' height='1'/><rect x='24' y='22' width='1' height='1'/><rect x='27' y='22' width='1' height='1'/><rect x='30' y='22' width='1' height='1'/><rect x='4' y='23' width='1' height='1'/><rect x='8' y='23' width='1' height='1'/><rect x='11' y='23' width='1' height='1'/><rect x='12' y='23' width='1' height='1'/><rect x='15' y='23' width='1' height='1'/><rect x='16' y='23' width='1' height='1'/><rect x='18' y='23' width='1' height='1'/><rect x='22' y='23' width='1' height='1'/><rect x='23' y='23' width='1' height='1'/><rect x='24' y='23' width='1' height='1'/><rect x='26' y='23' width='1' height='1'/><rect x='27' y='23' width='1' height='1'/><rect x='31' y='23' width='1' height='1'/><rect x='4' y='24' width='1' height='1'/><rect x='6' y='24' width='1' height='1'/><rect x='7' y='24' width='1' height='1'/><rect x='8' y='24' width='1' height='1'/><rect x='10' y='24' width='1' height='1'/><rect x='11' y='24' width='1' height='1'/><rect x='12' y='24' width='1' height='1'/><rect x='23' y='24' width='1' height='1'/><rect x='24' y='24' width='1' height='1'/><rect x='25' y='24' width='1' height='1'/><rect x='26' y='24' width='1' height='1'/><rect x='27' y='24' width='1' height='1'/><rect x='28' y='24' width='1' height='1'/><rect x='30' y='24' width='1' height='1'/><rect x='31' y='24' width='1' height='1'/><rect x='32' y='24' width='1' height='1'/><rect x='12' y='25' width='1' height='1'/><rect x='13' y='25' width='1' height='1'/><rect x='15' y='25' width='1' height='1'/><rect x='17' y='25' width='1' height='1'/><rect x='18' y='25' width='1' height='1'/><rect x='19' y='25' width='1' height='1'/><rect x='20' y='25' width='1' height='1'/><rect x='22' y='25' width='1' height='1'/><rect x='24' y='25' width='1' height='1'/><rect x='28' y='25' width='1' height='1'/><rect x='29' y='25' width='1' height='1'/><rect x='30' y='25' width='1' height='1'/><rect x='31' y='25' width='1' height='1'/><rect x='32' y='25' width='1' height='1'/><rect x='4' y='26' width='1' height='1'/><rect x='5' y='26' width='1' height='1'/><rect x='6' y='26' width='1' height='1'/><rect x='7' y='26' width='1' height='1'/><rect x='8' y='26' width='1' height='1'/><rect x='9' y='26' width='1' height='1'/><rect x='10' y='26' width='1' height='1'/><rect x='14' y='26' width='1' height='1'/><rect x='16' y='26' width='1' height='1'/><rect x='17' y='26' width='1' height='1'/><rect x='18' y='26' width='1' height='1'/><rect x='19' y='26' width='1' height='1'/><rect x='20' y='26' width='1' height='1'/><rect x='21' y='26' width='1' height='1'/><rect x='23' y='26' width='1' height='1'/><rect x='24' y='26' width='1' height='1'/><rect x='26' y='26' width='1' height='1'/><rect x='28' y='26' width='1' height='1'/><rect x='29' y='26' width='1' height='1'/><rect x='30' y='26' width='1' height='1'/><rect x='4' y='27' width='1' height='1'/><rect x='10' y='27' width='1' height='1'/><rect x='12' y='27' width='1' height='1'/><rect x='13' y='27' width='1' height='1'/><rect x='16' y='27' width='1' height='1'/><rect x='17' y='27' width='1' height='1'/><rect x='19' y='27' width='1' height='1'/><rect x='24' y='27' width='1' height='1'/><rect x='28' y='27' width='1' height='1'/><rect x='32' y='27' width='1' height='1'/><rect x='4' y='28' width='1' height='1'/><rect x='6' y='28' width='1' height='1'/><rect x='7' y='28' width='1' height='1'/><rect x='8' y='28' width='1' height='1'/><rect x='10' y='28' width='1' height='1'/><rect x='12' y='28' width='1' height='1'/><rect x='13' y='28' width='1' height='1'/><rect x='14' y='28' width='1' height='1'/><rect x='16' y='28' width='1' height='1'/><rect x='18' y='28' width='1' height='1'/><rect x='20' y='28' width='1' height='1'/><rect x='21' y='28' width='1' height='1'/><rect x='22' y='28' width='1' height='1'/><rect x='24' y='28' width='1' height='1'/><rect x='25' y='28' width='1' height='1'/><rect x='26' y='28' width='1' height='1'/><rect x='27' y='28' width='1' height='1'/><rect x='28' y='28' width='1' height='1'/><rect x='30' y='28' width='1' height='1'/><rect x='31' y='28' width='1' height='1'/><rect x='4' y='29' width='1' height='1'/><rect x='6' y='29' width='1' height='1'/><rect x='7' y='29' width='1' height='1'/><rect x='8' y='29' width='1' height='1'/><rect x='10' y='29' width='1' height='1'/><rect x='12' y='29' width='1' height='1'/><rect x='14' y='29' width='1' height='1'/><rect x='15' y='29' width='1' height='1'/><rect x='16' y='29' width='1' height='1'/><rect x='17' y='29' width='1' height='1'/><rect x='20' y='29' width='1' height='1'/><rect x='23' y='29' width='1' height='1'/><rect x='29' y='29' width='1' height='1'/><rect x='30' y='29' width='1' height='1'/><rect x='31' y='29' width='1' height='1'/><rect x='32' y='29' width='1' height='1'/><rect x='4' y='30' width='1' height='1'/><rect x='6' y='30' width='1' height='1'/><rect x='7' y='30' width='1' height='1'/><rect x='8' y='30' width='1' height='1'/><rect x='10' y='30' width='1' height='1'/><rect x='12' y='30' width='1' height='1'/><rect x='13' y='30' width='1' height='1'/><rect x='14' y='30' width='1' height='1'/><rect x='16' y='30' width='1' height='1'/><rect x='19' y='30' width='1' height='1'/><rect x='23' y='30' width='1' height='1'/><rect x='25' y='30' width='1' height='1'/><rect x='26' y='30' width='1' height='1'/><rect x='27' y='30' width='1' height='1'/><rect x='28' y='30' width='1' height='1'/><rect x='29' y='30' width='1' height='1'/><rect x='30' y='30' width='1' height='1'/><rect x='31' y='30' width='1' height='1'/><rect x='4' y='31' width='1' height='1'/><rect x='10' y='31' width='1' height='1'/><rect x='14' y='31' width='1' height='1'/><rect x='15' y='31' width='1' height='1'/><rect x='17' y='31' width='1' height='1'/><rect x='18' y='31' width='1' height='1'/><rect x='19' y='31' width='1' height='1'/><rect x='20' y='31' width='1' height='1'/><rect x='24' y='31' width='1' height='1'/><rect x='26' y='31' width='1' height='1'/><rect x='29' y='31' width='1' height='1'/><rect x='31' y='31' width='1' height='1'/><rect x='4' y='32' width='1' height='1'/><rect x='5' y='32' width='1' height='1'/><rect x='6' y='32' width='1' height='1'/><rect x='7' y='32' width='1' height='1'/><rect x='8' y='32' width='1' height='1'/><rect x='9' y='32' width='1' height='1'/><rect x='10' y='32' width='1' height='1'/><rect x='12' y='32' width='1' height='1'/><rect x='13' y='32' width='1' height='1'/><rect x='16' y='32' width='1' height='1'/><rect x='23' y='32' width='1' height='1'/><rect x='25' y='32' width='1' height='1'/><rect x='27' y='32' width='1' height='1'/><rect x='28' y='32' width='1' height='1'/><rect x='30' y='32' width='1' height='1'/></g></svg></div>
+      <div class="fbtext">
+        <p>Scan for a short, <span class="signal">anonymous</span> form — one rating and an optional comment. That's it.</p>
+        <div class="fburl">forms.gle/CxUyjNgxvG5LyKmLA</div>
+        <div class="fbq"><span>① Overall, how was the session?</span><span>② Anything you'd like to add?</span></div>
+      </div>
     </div>
   </div></section>
 
@@ -444,7 +526,71 @@ let ringCur=0;
 document.getElementById('ringsvg').addEventListener('click',e=>{const i=e.target.dataset.i||e.target.dataset.t;if(i!==undefined)showRing(+i);});
 document.querySelectorAll('#ringsvg circle,#ringsvg text').forEach(el=>el.style.cursor='pointer');
 
-/* ===== next-token + net ===== */
+/* ===== timeline ===== */
+const tlColor={AI:'#8C9AAB',ML:'#5BC9D6',DL:'#7BD88F',TF:'#FFB07A',LLM:'#FF8A3D'};
+const tlData=[
+ {y:'1943',c:'AI',t:'The artificial neuron',d:'McCulloch & Pitts model a neuron as simple logic. The whole field starts here — on paper, decades before the hardware.'},
+ {y:'1950',c:'AI',t:'The Turing Test',d:'Turing reframes "can machines think?" as a question about imitation — and sets the goalposts we still argue about.'},
+ {y:'1958',c:'ML',t:'The Perceptron',d:'Rosenblatt builds a machine that learns its own weights from examples. The first time we stop writing the rules.'},
+ {y:'1969',c:'AI',t:'First AI winter',d:'Minsky & Papert show a single perceptron can\'t even learn XOR. Confidence — and funding — collapse for years.'},
+ {y:'1986',c:'DL',t:'Backpropagation',d:'Rumelhart, Hinton & Williams make many-layered networks trainable. The thaw that makes everything later possible.'},
+ {y:'1997',c:'DL',t:'LSTM & Deep Blue',d:'Networks gain a form of memory; and a machine beats the world chess champion. Two milestones in one year.'},
+ {y:'2012',c:'DL',t:'AlexNet',d:'Deep learning crushes image recognition on ImageNet. The hinge moment — the modern era begins.'},
+ {y:'2013',c:'DL',t:'word2vec',d:'Words become vectors and meaning becomes geometry: king − man + woman ≈ queen.'},
+ {y:'2017',c:'TF',t:'Transformers',d:'"Attention Is All You Need." The architecture everything you use today is built on.'},
+ {y:'2018',c:'LLM',t:'BERT & GPT',d:'Pretrained language models arrive. GPT-1 (117M), then GPT-2 (1.5B) — coherent, but not yet remarkable to most.'},
+ {y:'2020',c:'LLM',t:'GPT-3 + scaling laws',d:'175 billion parameters — and the formal discovery that bigger reliably means better. Scale becomes a fact.'},
+ {y:'2022',c:'LLM',t:'ChatGPT + RLHF',d:'Aligning to human feedback makes it usable by everyone, overnight. The public finally notices.'},
+ {y:"'24+",c:'LLM',t:'Interpretability & agents',d:'Reading real features inside the weights (Golden Gate Claude); wrapping the model in tool-using loops.'}];
+let tlI=0,tlConvTimer=null;
+const tlRef=[
+ {a:'McCulloch & Pitts · 1943',u:'https://doi.org/10.1007/BF02478259'},
+ {a:'Turing · 1950',u:'https://doi.org/10.1093/mind/LIX.236.433'},
+ {a:'Rosenblatt · 1958',u:'https://doi.org/10.1037/h0042519'},
+ {a:'Minsky & Papert, "Perceptrons" · 1969',u:''},
+ {a:'Rumelhart, Hinton & Williams · 1986',u:'https://doi.org/10.1038/323533a0'},
+ {a:'Hochreiter & Schmidhuber · 1997',u:'https://doi.org/10.1162/neco.1997.9.8.1735'},
+ {a:'Krizhevsky, Sutskever & Hinton · 2012',u:'https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks'},
+ {a:'Mikolov et al. · 2013',u:'https://arxiv.org/abs/1301.3781'},
+ {a:'Vaswani et al. · 2017',u:'https://arxiv.org/abs/1706.03762'},
+ {a:'Devlin et al. (BERT) · 2018',u:'https://arxiv.org/abs/1810.04805'},
+ {a:'Brown et al. (GPT-3) · 2020',u:'https://arxiv.org/abs/2005.14165'},
+ {a:'Ouyang et al. (InstructGPT) · 2022',u:'https://arxiv.org/abs/2203.02155'},
+ {a:'Templeton et al., Scaling Monosemanticity · 2024',u:'https://transformer-circuits.pub/2024/scaling-monosemanticity/'}];
+function AM(c){return "<defs><marker id='tla' markerWidth='7' markerHeight='7' refX='5' refY='3' orient='auto'><path d='M0,0 L5,3 L0,6' fill='"+c+"'/></marker><marker id='tlg' markerWidth='7' markerHeight='7' refX='5' refY='3' orient='auto'><path d='M0,0 L5,3 L0,6' fill='#8C9AAB'/></marker></defs>";}
+function tlDia(i,col){const F="JetBrains Mono";const sv=s=>"<svg viewBox='0 0 160 110'>"+AM(col)+s+"</svg>";
+ switch(i){
+ case 0: return sv(`<circle cx='20' cy='30' r='4' fill='#5BC9D6'/><circle cx='20' cy='55' r='4' fill='#5BC9D6'/><circle cx='20' cy='80' r='4' fill='#5BC9D6'/><line x1='24' y1='30' x2='66' y2='50' stroke='#2C3744'/><line x1='24' y1='55' x2='64' y2='55' stroke='#2C3744'/><line x1='24' y1='80' x2='66' y2='60' stroke='#2C3744'/><text x='44' y='38' fill='#8C9AAB' font-family='${F}' font-size='7'>w1</text><text x='44' y='52' fill='#8C9AAB' font-family='${F}' font-size='7'>w2</text><text x='44' y='75' fill='#8C9AAB' font-family='${F}' font-size='7'>w3</text><circle cx='84' cy='55' r='18' fill='#161D27' stroke='${col}' stroke-width='1.8'/><path d='M74 62 H84 V49 H94' fill='none' stroke='${col}' stroke-width='1.5'/><line x1='102' y1='55' x2='146' y2='55' stroke='${col}' marker-end='url(#tla)'/><text x='12' y='105' fill='#8C9AAB' font-family='${F}' font-size='7.5'>weighted sum → activation</text>`);
+ case 1: return sv(`<circle cx='30' cy='28' r='7' fill='none' stroke='#5BC9D6' stroke-width='1.6'/><path d='M18 46 Q30 34 42 46' fill='none' stroke='#5BC9D6' stroke-width='1.6'/><text x='30' y='59' fill='#8C9AAB' font-family='${F}' font-size='7' text-anchor='middle'>human</text><rect x='18' y='68' width='24' height='18' rx='2' fill='none' stroke='#8C9AAB' stroke-width='1.6'/><circle cx='25' cy='76' r='1.6' fill='#8C9AAB'/><circle cx='35' cy='76' r='1.6' fill='#8C9AAB'/><line x1='25' y1='82' x2='35' y2='82' stroke='#8C9AAB'/><text x='30' y='99' fill='#8C9AAB' font-family='${F}' font-size='7' text-anchor='middle'>machine</text><line x1='74' y1='12' x2='74' y2='100' stroke='#2C3744' stroke-dasharray='3 3'/><line x1='44' y1='32' x2='104' y2='50' stroke='#2C3744'/><line x1='44' y1='76' x2='104' y2='56' stroke='#2C3744'/><circle cx='118' cy='52' r='12' fill='#161D27' stroke='${col}' stroke-width='1.6'/><text x='118' y='57' fill='${col}' font-family='${F}' font-size='13' text-anchor='middle'>?</text><text x='118' y='78' fill='#8C9AAB' font-family='${F}' font-size='7' text-anchor='middle'>judge</text>`);
+ case 2: return sv(`<rect x='16' y='12' width='128' height='84' rx='4' fill='none' stroke='#2C3744'/><circle cx='38' cy='30' r='3.5' fill='#5BC9D6'/><circle cx='52' cy='42' r='3.5' fill='#5BC9D6'/><circle cx='34' cy='52' r='3.5' fill='#5BC9D6'/><circle cx='56' cy='28' r='3.5' fill='#5BC9D6'/><circle cx='120' cy='82' r='3.5' fill='#FFB07A'/><circle cx='108' cy='72' r='3.5' fill='#FFB07A'/><circle cx='126' cy='66' r='3.5' fill='#FFB07A'/><circle cx='112' cy='88' r='3.5' fill='#FFB07A'/><line x1='30' y1='92' x2='140' y2='20' stroke='#EAEEF4' stroke-width='2'/><text x='16' y='106' fill='#8C9AAB' font-family='${F}' font-size='7.5'>learns a dividing line</text>`);
+ case 3: return sv(`<rect x='40' y='14' width='80' height='80' rx='4' fill='none' stroke='#2C3744'/><circle cx='58' cy='32' r='4.5' fill='#5BC9D6'/><circle cx='102' cy='76' r='4.5' fill='#5BC9D6'/><circle cx='102' cy='32' r='4.5' fill='#FFB07A'/><circle cx='58' cy='76' r='4.5' fill='#FFB07A'/><line x1='46' y1='90' x2='114' y2='18' stroke='#F2596A' stroke-width='1.8' stroke-dasharray='5 3'/><text x='126' y='40' fill='#F2596A' font-family='${F}' font-size='15'>✗</text><text x='26' y='106' fill='#8C9AAB' font-family='${F}' font-size='7.5'>no straight line solves XOR</text>`);
+ case 4: return sv(`<line x1='28' y1='40' x2='80' y2='28' stroke='#2C3744'/><line x1='28' y1='40' x2='80' y2='57' stroke='#2C3744'/><line x1='28' y1='40' x2='80' y2='86' stroke='#2C3744'/><line x1='28' y1='74' x2='80' y2='28' stroke='#2C3744'/><line x1='28' y1='74' x2='80' y2='57' stroke='#2C3744'/><line x1='28' y1='74' x2='80' y2='86' stroke='#2C3744'/><line x1='80' y1='28' x2='132' y2='40' stroke='#2C3744'/><line x1='80' y1='28' x2='132' y2='74' stroke='#2C3744'/><line x1='80' y1='57' x2='132' y2='40' stroke='#2C3744'/><line x1='80' y1='57' x2='132' y2='74' stroke='#2C3744'/><line x1='80' y1='86' x2='132' y2='40' stroke='#2C3744'/><line x1='80' y1='86' x2='132' y2='74' stroke='#2C3744'/><circle cx='28' cy='40' r='4' fill='#5BC9D6'/><circle cx='28' cy='74' r='4' fill='#5BC9D6'/><circle cx='80' cy='28' r='4' fill='#1D2630' stroke='#8C9AAB'/><circle cx='80' cy='57' r='4' fill='#1D2630' stroke='#8C9AAB'/><circle cx='80' cy='86' r='4' fill='#1D2630' stroke='#8C9AAB'/><circle cx='132' cy='40' r='4' fill='${col}'/><circle cx='132' cy='74' r='4' fill='${col}'/><line x1='132' y1='15' x2='28' y2='15' stroke='${col}' stroke-width='1.8' stroke-dasharray='5 3' marker-end='url(#tla)'/><text x='64' y='12' fill='${col}' font-family='${F}' font-size='7'>error</text><text x='30' y='106' fill='#8C9AAB' font-family='${F}' font-size='7.5'>errors propagate backward</text>`);
+ case 5: return sv(`<line x1='14' y1='58' x2='38' y2='58' stroke='${col}' marker-end='url(#tla)'/><rect x='40' y='34' width='80' height='48' rx='8' fill='#161D27' stroke='${col}' stroke-width='1.6'/><line x1='40' y1='44' x2='120' y2='44' stroke='${col}' stroke-width='1.4'/><circle cx='66' cy='44' r='5' fill='#161D27' stroke='${col}'/><text x='66' y='47' fill='${col}' font-family='${F}' font-size='7' text-anchor='middle'>×</text><circle cx='96' cy='44' r='5' fill='#161D27' stroke='${col}'/><text x='96' y='47' fill='${col}' font-family='${F}' font-size='8' text-anchor='middle'>+</text><rect x='58' y='60' width='14' height='13' rx='2' fill='#1D2630' stroke='#5BC9D6'/><text x='65' y='70' fill='#5BC9D6' font-family='${F}' font-size='8' text-anchor='middle'>σ</text><rect x='88' y='60' width='14' height='13' rx='2' fill='#1D2630' stroke='#5BC9D6'/><text x='95' y='70' fill='#5BC9D6' font-family='${F}' font-size='8' text-anchor='middle'>σ</text><line x1='120' y1='58' x2='146' y2='58' stroke='${col}' marker-end='url(#tla)'/><text x='34' y='105' fill='#8C9AAB' font-family='${F}' font-size='7.5'>gated long-term memory</text>`);
+ case 6:{let inp='';for(let r=0;r<5;r++)for(let c=0;c<5;c++)inp+=`<rect x='${14+c*12}' y='${24+r*12}' width='12' height='12' fill='#1D2630' stroke='#2C3744'/>`;
+   let outp='';for(let p=0;p<9;p++)outp+=`<rect id='cvo${p}' x='${108+(p%3)*12}' y='${36+Math.floor(p/3)*12}' width='12' height='12' fill='#1D2630' stroke='#2C3744'/>`;
+   return sv(inp+`<rect id='cvk' x='14' y='24' width='36' height='36' fill='none' stroke='${col}' stroke-width='2.2'/><line x1='80' y1='54' x2='102' y2='54' stroke='${col}' marker-end='url(#tla)'/>`+outp+`<text x='12' y='105' fill='#8C9AAB' font-family='${F}' font-size='7.5'>kernel slides → feature map</text>`);}
+ case 7: return sv(`<line x1='36' y1='76' x2='36' y2='39' stroke='#5BC9D6' stroke-width='1.6'/><line x1='40' y1='80' x2='112' y2='80' stroke='#5BC9D6' stroke-width='1.6'/><line x1='36' y1='34' x2='112' y2='34' stroke='#2C3744' stroke-dasharray='3 3'/><line x1='116' y1='76' x2='116' y2='39' stroke='#2C3744' stroke-dasharray='3 3'/><circle cx='36' cy='80' r='4' fill='#8C9AAB'/><text x='36' y='94' fill='#8C9AAB' font-family='${F}' font-size='7.5' text-anchor='middle'>man</text><circle cx='36' cy='34' r='4' fill='${col}'/><text x='30' y='30' fill='${col}' font-family='${F}' font-size='7.5' text-anchor='end'>king</text><circle cx='116' cy='80' r='4' fill='#8C9AAB'/><text x='116' y='94' fill='#8C9AAB' font-family='${F}' font-size='7.5' text-anchor='middle'>woman</text><circle cx='116' cy='34' r='4' fill='${col}'/><text x='122' y='30' fill='${col}' font-family='${F}' font-size='7.5' text-anchor='start'>queen</text><text x='76' y='60' fill='#8C9AAB' font-family='${F}' font-size='7' text-anchor='middle'>same offset</text>`);
+ case 8: return sv(`<rect x='48' y='20' width='64' height='16' rx='4' fill='#161D27' stroke='${col}'/><text x='80' y='31' fill='${col}' font-family='${F}' font-size='7.5' text-anchor='middle'>attn + FFN</text><rect x='48' y='42' width='64' height='16' rx='4' fill='#161D27' stroke='${col}' opacity='.82'/><text x='80' y='53' fill='${col}' font-family='${F}' font-size='7.5' text-anchor='middle'>attn + FFN</text><rect x='48' y='64' width='64' height='16' rx='4' fill='#161D27' stroke='${col}' opacity='.64'/><text x='80' y='75' fill='${col}' font-family='${F}' font-size='7.5' text-anchor='middle'>attn + FFN</text><line x1='124' y1='80' x2='124' y2='22' stroke='#8C9AAB' marker-end='url(#tlg)'/><text x='133' y='53' fill='#8C9AAB' font-family='${F}' font-size='8'>×N</text><circle cx='62' cy='90' r='2.6' fill='#5BC9D6'/><circle cx='80' cy='90' r='2.6' fill='#5BC9D6'/><circle cx='98' cy='90' r='2.6' fill='#5BC9D6'/><text x='24' y='105' fill='#8C9AAB' font-family='${F}' font-size='7.5'>stack of attention blocks</text>`);
+ case 9: return sv(`<rect x='16' y='30' width='30' height='42' rx='3' fill='#161D27' stroke='#5BC9D6'/><line x1='21' y1='40' x2='41' y2='40' stroke='#2C3744'/><line x1='21' y1='48' x2='41' y2='48' stroke='#2C3744'/><line x1='21' y1='56' x2='41' y2='56' stroke='#2C3744'/><line x1='21' y1='64' x2='41' y2='64' stroke='#2C3744'/><text x='31' y='26' fill='#8C9AAB' font-family='${F}' font-size='7' text-anchor='middle'>all text</text><line x1='48' y1='51' x2='64' y2='51' stroke='${col}' marker-end='url(#tla)'/><rect x='66' y='36' width='38' height='30' rx='6' fill='#161D27' stroke='${col}' stroke-width='1.6'/><text x='85' y='55' fill='${col}' font-family='${F}' font-size='8' text-anchor='middle'>model</text><line x1='106' y1='51' x2='118' y2='51' stroke='${col}' marker-end='url(#tla)'/><rect x='122' y='43' width='30' height='16' rx='4' fill='${col}'/><text x='137' y='54' fill='#0E1117' font-family='${F}' font-size='8' text-anchor='middle'>next</text><text x='14' y='105' fill='#8C9AAB' font-family='${F}' font-size='7.5'>pretrained next-token model</text>`);
+ case 10: return sv(`<line x1='28' y1='14' x2='28' y2='88' stroke='#2C3744'/><line x1='28' y1='88' x2='142' y2='88' stroke='#2C3744'/><line x1='34' y1='24' x2='136' y2='80' stroke='${col}' stroke-width='2'/><circle cx='52' cy='37' r='2.6' fill='${col}'/><circle cx='86' cy='56' r='2.6' fill='${col}'/><circle cx='120' cy='75' r='2.6' fill='${col}'/><text x='8' y='20' fill='#8C9AAB' font-family='${F}' font-size='7'>loss</text><text x='92' y='103' fill='#8C9AAB' font-family='${F}' font-size='7'>compute →</text>`);
+ case 11: return sv(`<rect x='14' y='40' width='32' height='26' rx='5' fill='#161D27' stroke='${col}' stroke-width='1.6'/><text x='30' y='56' fill='${col}' font-family='${F}' font-size='7.5' text-anchor='middle'>policy</text><line x1='46' y1='46' x2='62' y2='34' stroke='#8C9AAB' marker-end='url(#tlg)'/><line x1='46' y1='60' x2='62' y2='72' stroke='#8C9AAB' marker-end='url(#tlg)'/><rect x='64' y='26' width='28' height='16' rx='4' fill='#1D2630' stroke='#7BD88F'/><text x='78' y='37' fill='#7BD88F' font-family='${F}' font-size='7.5' text-anchor='middle'>A ✓</text><rect x='64' y='64' width='28' height='16' rx='4' fill='#1D2630' stroke='#F2596A'/><text x='78' y='75' fill='#F2596A' font-family='${F}' font-size='7.5' text-anchor='middle'>B ✗</text><text x='116' y='36' fill='#8C9AAB' font-family='${F}' font-size='7' text-anchor='middle'>human</text><text x='116' y='45' fill='#8C9AAB' font-family='${F}' font-size='7' text-anchor='middle'>picks A</text><path d='M92 34 Q126 30 126 53 Q126 80 46 72' fill='none' stroke='${col}' stroke-dasharray='4 3' marker-end='url(#tla)'/><text x='42' y='105' fill='${col}' font-family='${F}' font-size='7'>reward → update</text>`);
+ case 12: return sv(`<line x1='34' y1='34' x2='66' y2='50' stroke='#2C3744'/><line x1='34' y1='66' x2='66' y2='50' stroke='#2C3744'/><line x1='66' y1='50' x2='98' y2='40' stroke='#2C3744'/><line x1='66' y1='50' x2='98' y2='64' stroke='#2C3744'/><circle cx='34' cy='34' r='3' fill='#2C3744'/><circle cx='34' cy='66' r='3' fill='#2C3744'/><circle cx='98' cy='40' r='3' fill='#2C3744'/><circle cx='98' cy='64' r='3' fill='#2C3744'/><circle cx='66' cy='50' r='4' fill='${col}'/><circle cx='66' cy='50' r='13' fill='none' stroke='${col}' stroke-width='2'/><line x1='75' y1='59' x2='88' y2='72' stroke='${col}' stroke-width='2.5'/><rect x='112' y='42' width='36' height='8' rx='4' fill='#1D2630' stroke='#2C3744'/><circle cx='140' cy='46' r='5' fill='${col}'/><text x='130' y='35' fill='#8C9AAB' font-family='${F}' font-size='7' text-anchor='middle'>turn up</text><text x='14' y='105' fill='#8C9AAB' font-family='${F}' font-size='7.5'>find & steer a feature</text>`);
+ default: return '';}}
+function tlRender(){const w=document.getElementById('tlnodes');
+  w.innerHTML=tlData.map((m,i)=>{const col=tlColor[m.c];const cls='tlnode'+(i<=tlI?' shown':'')+(i===tlI?' cur':'');
+    return `<div class="${cls}" data-i="${i}"><span class="yr">${m.y}</span><span class="pt" style="border-color:${col};color:${col}${i<=tlI?';background:'+col:''}"></span><span class="nm">${m.t}</span></div>`;}).join('');
+  const m=tlData[tlI],col=tlColor[m.c],dia=tlDia(tlI,col),r=tlRef[tlI];
+  const refhtml=r?(r.u?'<a class="tlref" href="'+r.u+'" target="_blank" rel="noopener">'+r.a+' ↗</a>':'<span class="tlref nolink">'+r.a+'</span>'):'';
+  document.getElementById('tlcard').innerHTML='<div class="txt"><div class="tg" style="color:'+col+'">'+m.c+' · '+m.y+'</div><h3>'+m.t+'</h3><p>'+m.d+'</p>'+refhtml+'</div>'+(dia?'<div class="dia">'+dia+'</div>':'');
+  document.getElementById('tlcard').style.borderColor=col;
+  clearInterval(tlConvTimer);tlConvTimer=null;
+  if(tlI===6){let p=0;tlConvTimer=setInterval(()=>{const k=document.getElementById('cvk');if(!k){clearInterval(tlConvTimer);return;}
+    const rr=Math.floor(p/3),cc=p%3;k.setAttribute('x',14+cc*12);k.setAttribute('y',24+rr*12);
+    if(p===0)for(let q=0;q<9;q++){const o=document.getElementById('cvo'+q);if(o)o.setAttribute('fill','#1D2630');}
+    const o=document.getElementById('cvo'+p);if(o)o.setAttribute('fill',col);p=(p+1)%9;},520);}
+  w.querySelectorAll('.tlnode').forEach(n=>n.onclick=()=>{tlI=+n.dataset.i;tlRender();});
+  const c=w.querySelector('.tlnode.cur');if(c&&c.scrollIntoView)c.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});}
+function tlAdvance(){if(tlI<tlData.length-1)tlI++;else tlI=0;tlRender();}
 const ntpSteps=[
   {ctx:['The'],dist:[['cat',.34],['sun',.17],['city',.14],['idea',.11],['model',.09]]},
   {ctx:['The','cat'],dist:[['sat',.41],['ran',.19],['slept',.13],['jumped',.10],['was',.08]]},
@@ -452,29 +598,31 @@ const ntpSteps=[
   {ctx:['The','cat','sat','on'],dist:[['the',.71],['a',.14],['its',.06],['my',.05],['his',.03]]},
   {ctx:['The','cat','sat','on','the'],dist:[['mat',.38],['floor',.21],['roof',.13],['sofa',.11],['edge',.08]]},
   {ctx:['The','cat','sat','on','the','mat'],dist:[['.',.62],[',',.18],['and',.11],['then',.05],['while',.03]]}];
-let ntpi=0;
-function buildNet(){const s=document.getElementById('netsvg');const xs=[34,90,150,190];const ys=[[50,100,150],[40,80,120,160],[40,80,120,160],[100]];
-  let h='';for(let l=0;l<3;l++)for(let a=0;a<ys[l].length;a++)for(let b=0;b<ys[l+1].length;b++)h+=`<line class='edge' data-l='${l}' x1='${xs[l]}' y1='${ys[l][a]}' x2='${xs[l+1]}' y2='${ys[l+1][b]}'/>`;
-  for(let l=0;l<4;l++)for(let a=0;a<ys[l].length;a++){const cls=l===0?'nd in':(l===3?'nd out':'nd');h+=`<circle class='${cls}' cx='${xs[l]}' cy='${ys[l][a]}' r='6'/>`;}
-  s.innerHTML=h;}
-function pulseNet(){const edges=document.querySelectorAll('#netsvg .edge');edges.forEach(e=>e.classList.remove('pulse'));
-  [0,1,2].forEach(l=>setTimeout(()=>document.querySelectorAll("#netsvg .edge[data-l='"+l+"']").forEach(e=>e.classList.add('pulse')),l*220));}
-function ntpRender(){const st=ntpSteps[ntpi];
-  document.getElementById('ntpsent').innerHTML=st.ctx.map(w=>'<span>'+w+'</span>').join(' ')+' <span class="cursor">▮</span>';
+let ntpi=0,ntpJust=-1,ntpBusy=false;
+function ntpRender(sampled){const st=ntpSteps[ntpi];
+  document.getElementById('ntpsent').innerHTML=st.ctx.map((w,i)=>'<span class="w'+(i===ntpJust?' just':'')+'">'+w+'</span>').join(' ')+' <span class="cursor">▮</span>';
   const bars=document.getElementById('ntpbars');bars.innerHTML='';
-  st.dist.forEach((d,k)=>{const row=document.createElement('div');row.className='bar'+(k===0?' top':'');
+  st.dist.forEach((d,k)=>{const row=document.createElement('div');row.className='bar'+(k===0?' top':'')+(sampled&&k===0?' sampled':'');
     row.innerHTML='<span class="tok">'+(d[0]==='.'?'"."':d[0])+'</span><div class="track"><div class="fill"></div></div><span class="pct">'+Math.round(d[1]*100)+'%</span>';
     bars.appendChild(row);requestAnimationFrame(()=>row.querySelector('.fill').style.width=(d[1]*100)+'%');});}
-function ntpAdvance(){if(ntpi<ntpSteps.length-1){ntpi++;pulseNet();setTimeout(ntpRender,300);}}
+function ntpAdvance(){if(ntpBusy)return;
+  if(ntpi>=ntpSteps.length-1){ntpi=0;ntpJust=-1;ntpRender(false);return;}
+  ntpBusy=true;ntpRender(true);                       // highlight the sampled (top) token
+  setTimeout(()=>{ntpi++;ntpJust=ntpSteps[ntpi].ctx.length-1;ntpRender(false);ntpBusy=false;},680);}
 
 /* ===== four pieces (all visible, richer staged animations) ===== */
 let pieceStep=-1,ctxTimer=null;
-function tokDefault(){document.getElementById('tokchips').innerHTML='<span class="chip on">strawberry</span>';}
-function tokAnim(){const c=document.getElementById('tokchips');
+function tokDefault(){const c=document.getElementById('tokchips');c.style.cssText='';c.innerHTML='<span class="chip on">strawberry</span>';}
+function tokAnim(){const c=document.getElementById('tokchips');c.style.cssText='';
   c.innerHTML='<span class="chip on" id="fullw">strawberry</span>';
   const full=document.getElementById('fullw');
   setTimeout(()=>{full.style.background='var(--signal)';full.style.color='#0A0E14';},250);
-  setTimeout(()=>{c.innerHTML='';['straw','berry'].forEach((t,i)=>{const e=document.createElement('span');e.className='chip';e.textContent=t;c.appendChild(e);setTimeout(()=>e.classList.add('on'),100+i*420);});},900);}
+  setTimeout(()=>{c.style.cssText='display:flex;gap:24px;justify-content:center;align-items:flex-start';c.innerHTML='';
+    [['straw',[.7,.3,.9,.4,.6,.5]],['berry',[.4,.8,.3,.7,.5,.9]]].forEach((pair,i)=>{const u=document.createElement('div');
+      u.style.cssText='display:flex;flex-direction:column;align-items:center;gap:7px;opacity:0;transition:opacity .35s';
+      const cells=pair[1].map(v=>'<i style="width:11px;height:11px;border-radius:2px;background:#5BC9D6;opacity:'+v+'"></i>').join('');
+      u.innerHTML='<span class="chip on">'+pair[0]+'</span><div style="font-family:var(--mono);font-size:.58rem;color:#8C9AAB">↓ becomes a vector</div><div style="display:flex;gap:3px">'+cells+'</div>';
+      c.appendChild(u);setTimeout(()=>u.style.opacity=1,140+i*440);});},950);}
 function embDefault(){document.getElementById('embsvg').innerHTML="<text x='120' y='78' fill='#3a4654' font-family='JetBrains Mono' font-size='9' text-anchor='middle'>vectors in space</text>";}
 function embAnim(){const s=document.getElementById('embsvg');const P={man:[55,120],king:[55,34],woman:[185,120],queen:[185,34]};
   function pt(n,c,d){const[x,y]=P[n];const r=(n==='woman'||n==='queen');return `<circle cx='${x}' cy='${y}' r='4.5' fill='${c}' opacity='0'><animate attributeName='opacity' to='1' dur='.25s' begin='${d}s' fill='freeze'/></circle><text x='${x+(r?9:-9)}' y='${y+4}' fill='${c}' font-family='JetBrains Mono' font-size='11' text-anchor='${r?'start':'end'}' opacity='0'>${n}<animate attributeName='opacity' to='1' dur='.25s' begin='${d}s' fill='freeze'/></text>`;}
@@ -485,12 +633,18 @@ function embAnim(){const s=document.getElementById('embsvg');const P={man:[55,12
     +pt('woman','#8C9AAB',1.1)+arr('man','woman','#5BC9D6',1.2)
     +pt('queen','#FF8A3D',1.9)+arr('king','queen','#2C3744',1.9,1)+arr('woman','queen','#2C3744',1.9,1)
     +"<text x='120' y='100' fill='#5BC9D6' font-family='JetBrains Mono' font-size='8' text-anchor='middle' opacity='0'>king + (woman − man) ≈ queen<animate attributeName='opacity' to='1' dur='.3s' begin='2.4s' fill='freeze'/></text>";}
-function attDefault(){const xs=[34,90,142,190];document.getElementById('attsvg').innerHTML=['The','cat','sat','on'].map((t,i)=>`<text x='${xs[i]}' y='42' fill='#8C9AAB' font-family='JetBrains Mono' font-size='12' text-anchor='middle'>${t}</text>`).join('');}
-function attAnim(){const s=document.getElementById('attsvg');const toks=['The','cat','sat','on'];const xs=[34,90,142,190];const y=42;
-  let h=toks.map((t,i)=>`<text x='${xs[i]}' y='${y}' fill='#EAEEF4' font-family='JetBrains Mono' font-size='12' text-anchor='middle'>${t}</text>`).join('');
-  let d=0.3;for(let i=1;i<toks.length;i++)for(let j=0;j<i;j++){const x1=xs[i],x2=xs[j],mx=(x1+x2)/2,dip=y+18+(i-j)*16;
-    h+=`<path d='M${x1} ${y+8} Q ${mx} ${dip} ${x2} ${y+8}' fill='none' stroke='#FF8A3D' stroke-width='1.3' opacity='0'><animate attributeName='opacity' to='${(0.35+0.5/(i-j)).toFixed(2)}' dur='.3s' begin='${d.toFixed(2)}s' fill='freeze'/></path>`;d+=0.34;}
-  h+=`<text x='120' y='142' fill='#8C9AAB' font-family='JetBrains Mono' font-size='8' text-anchor='middle'>each token attends to the ones before it</text>`;s.innerHTML=h;}
+function attDefault(){const s=document.getElementById('attsvg');const cell=15;
+  function fstrip(x,y){let r='';for(let k=0;k<5;k++)r+=`<rect x='${x+k*cell}' y='${y}' width='13' height='13' rx='2' fill='#5BC9D6' fill-opacity='.12' stroke='#2C3744'/>`;return r;}
+  s.innerHTML=fstrip(14,16)+fstrip(14,52)+fstrip(14,88)+(function(){let r='';for(let k=0;k<5;k++)r+=`<rect x='${160+k*cell}' y='52' width='13' height='13' rx='2' fill='#FF8A3D' fill-opacity='.12' stroke='#2C3744'/>`;return r;})()+"<text x='120' y='140' fill='#3a4654' font-family='JetBrains Mono' font-size='8' text-anchor='middle'>three token vectors → one</text>";}
+function attAnim(){const s=document.getElementById('attsvg');const cell=15;
+  const v1=[.8,.3,.6,.2,.5],v2=[.4,.9,.3,.7,.2],v3=[.6,.5,.8,.4,.9],w=[.5,.3,.2];
+  const out=v1.map((_,k)=>v1[k]*w[0]+v2[k]*w[1]+v3[k]*w[2]);
+  function strip(x,y,vals,col,b){return vals.map((v,k)=>`<rect x='${x+k*cell}' y='${y}' width='13' height='13' rx='2' fill='${col}' fill-opacity='0' stroke='#2C3744'><animate attributeName='fill-opacity' to='${(0.18+v*0.8).toFixed(2)}' dur='.3s' begin='${(b+k*0.05).toFixed(2)}s' fill='freeze'/></rect>`).join('');}
+  function arr(y,b){return `<line x1='92' y1='${y}' x2='156' y2='58' stroke='#FF8A3D' stroke-width='1.2' opacity='0'><animate attributeName='opacity' to='.55' dur='.3s' begin='${b}s' fill='freeze'/></line>`;}
+  let h=strip(14,16,v1,'#5BC9D6',0)+strip(14,52,v2,'#5BC9D6',.25)+strip(14,88,v3,'#5BC9D6',.5);
+  h+=arr(22,.9)+arr(58,1.0)+arr(94,1.1)+strip(160,52,out,'#FF8A3D',1.4);
+  h+="<text x='120' y='140' fill='#8C9AAB' font-family='JetBrains Mono' font-size='8' text-anchor='middle'>attention blends them into a new vector</text>";
+  s.innerHTML=h;}
 function ctxDefault(){document.getElementById('ctxsvg').innerHTML="<rect x='8' y='46' width='224' height='40' rx='8' fill='rgba(255,138,61,.05)' stroke='#2C3744'/><text x='120' y='70' fill='#3a4654' font-family='JetBrains Mono' font-size='9' text-anchor='middle'>a fixed-size window</text>";}
 const ctxWords=['neural','nets','learn','to','predict','the','next','token','from','data','at','scale'];
 function ctxAnim(){const s=document.getElementById('ctxsvg');let idx=0;const cap=6;
@@ -549,15 +703,22 @@ function clampRender(){const v=+document.getElementById('clampr').value;const id
 document.getElementById('clampr').addEventListener('input',clampRender);
 function clampAdvance(){const r=document.getElementById('clampr');r.value=Math.min(10,+r.value+2.5);clampRender();}
 
-/* ===== agents loop (generate -> tool call -> result, repeat until no tool call) ===== */
-const phases=['generate','tool call','result'];
-function drawLoop(active){const s=document.getElementById('loopsvg');const pts=[[130,40],[210,150],[50,150]];
-  let h="<path d='M130 40 L210 150 L50 150 Z' fill='none' stroke='#2C3744' stroke-dasharray='3 5'/>";
-  h+="<defs><marker id='lp' markerWidth='8' markerHeight='8' refX='5' refY='3' orient='auto'><path d='M0,0 L6,3 L0,6' fill='#FF8A3D'/></marker></defs>";
-  phases.forEach((p,i)=>{const[x,y]=pts[i];const on=i===active;
-    h+=`<circle class='node' cx='${x}' cy='${y}' r='34' fill='${on?'rgba(255,138,61,.2)':'#161D27'}' stroke='${on?'#FF8A3D':'#2C3744'}' stroke-width='${on?2.5:1}'/>`;
-    h+=`<text x='${x}' y='${y+4}' fill='${on?'#FF8A3D':'#8C9AAB'}' font-family='JetBrains Mono' font-size='10.5' text-anchor='middle'>${p}</text>`;});
-  h+="<text x='130' y='108' fill='#8C9AAB' font-family='JetBrains Mono' font-size='8.5' text-anchor='middle'>↺ until no tool call</text>";s.innerHTML=h;}
+/* ===== agents: context-window coverage (Claude Code style) ===== */
+function drawContext(turns){const s=document.getElementById('loopsvg');
+  const X=22,W=84,top=18,H=200,bottom=top+H;
+  const fixed=[['system prompt','#5BC9D6',26],['tools','#7BD88F',34],['memory / files','#A479E2',22]];
+  let y=top,h=`<rect x='${X-3}' y='${top-3}' width='${W+6}' height='${H+6}' rx='7' fill='none' stroke='#2C3744'/>`;
+  h+=`<text x='${X+W/2}' y='12' fill='#8C9AAB' font-family='JetBrains Mono' font-size='8' text-anchor='middle'>context window</text>`;
+  fixed.forEach(f=>{h+=`<rect x='${X}' y='${y}' width='${W}' height='${f[2]}' fill='${f[1]}' fill-opacity='.28' stroke='${f[1]}'/><text x='${X+W/2}' y='${y+f[2]/2+3}' fill='${f[1]}' font-family='JetBrains Mono' font-size='8' text-anchor='middle'>${f[0]}</text>`;y+=f[2];});
+  const convTop=y,turnH=13;
+  for(let i=0;i<turns;i++){const isOut=i%2===1,col=isOut?'#FF8A3D':'#8C9AAB';
+    h+=`<rect x='${X}' y='${y}' width='${W}' height='${turnH-1}' fill='${col}' fill-opacity='${isOut?.5:.22}' stroke='${col}' stroke-opacity='.55'/>`;y+=turnH;}
+  const ybot=Math.min(y,bottom);
+  if(y<bottom)h+=`<rect x='${X}' y='${y}' width='${W}' height='${bottom-y}' fill='#0E1117' stroke='#2C3744' stroke-dasharray='2 3'/><text x='${X+W/2}' y='${(y+bottom)/2+3}' fill='#3a4654' font-family='JetBrains Mono' font-size='7.5' text-anchor='middle'>free</text>`;
+  if(turns>0){h+=`<path d='M${X+W+5} ${convTop+1} H${X+W+13} V${ybot-1} H${X+W+5}' fill='none' stroke='#FF8A3D' stroke-width='1'/><text x='${X+W+17}' y='${(convTop+ybot)/2-2}' fill='#FF8A3D' font-family='JetBrains Mono' font-size='7.5'>each step</text><text x='${X+W+17}' y='${(convTop+ybot)/2+7}' fill='#FF8A3D' font-family='JetBrains Mono' font-size='7.5'>appends I/O</text>`;}
+  const pct=Math.min(100,Math.round((y-top)/H*100));
+  h+=`<text x='${X+W/2}' y='${bottom+16}' fill='${pct>88?'#F2596A':'#8C9AAB'}' font-family='JetBrains Mono' font-size='9' text-anchor='middle'>${pct}% full</text>`;
+  s.innerHTML=h;}
 const agentSteps=[
   {ph:0,l:"<span class='ph'>generate</span> model: \"inspect auth.js\" → calls a tool"},
   {ph:1,l:"<span class='ph'>tool call</span> <span class='c'>read_file(\"auth.js\")</span>"},
@@ -571,7 +732,7 @@ const agentSteps=[
 let agentI=0;
 function agentRender(){const t=document.getElementById('agentterm');
   t.innerHTML=agentSteps.map((s,i)=>'<div class="l'+(i<=agentI?' on':'')+'">'+s.l+'</div>').join('');
-  drawLoop(agentSteps[agentI].ph);}
+  drawContext(agentI+1);}
 function agentAdvance(){agentI=(agentI+1)%agentSteps.length;agentRender();}
 
 /* ===== reveal helpers ===== */
@@ -586,22 +747,24 @@ qaEls().forEach((el,i)=>el.onclick=()=>el.classList.toggle('shown'));
 let mmStep=0;
 function mentalAdvance(){if(mmStep===0){document.getElementById('mmans').classList.add('on');
     ['not0','not1','not2'].forEach((id,i)=>setTimeout(()=>document.getElementById(id).classList.add('on'),i*350));mmStep=1;}
-  else if(mmStep===1){document.getElementById('internln').classList.add('on');mmStep=2;}}
+  else if(mmStep===1){document.getElementById('closeln').classList.add('on');mmStep=2;}}
 
 /* ===== advancers + enter ===== */
-const advancers={1:hookStart,2:()=>showRing((ringCur+1)%5),3:ntpAdvance,4:piecesAdvance,5:()=>revealTake('take5'),
-  6:trainAdvance,7:detAdvance,8:clampAdvance,9:agentAdvance,10:()=>revealTake('take10'),11:hardAdvance,12:mentalAdvance};
+const advancers={1:hookStart,2:()=>showRing((ringCur+1)%5),3:tlAdvance,4:ntpAdvance,5:piecesAdvance,6:()=>revealTake('take5'),
+  7:trainAdvance,8:detAdvance,9:clampAdvance,10:agentAdvance,11:()=>revealTake('take10'),12:hardAdvance,13:mentalAdvance};
 function enter(n){
-  if(n!==4&&ctxTimer){clearInterval(ctxTimer);ctxTimer=null;}
+  if(n!==5&&ctxTimer){clearInterval(ctxTimer);ctxTimer=null;}
+  if(n!==3&&tlConvTimer){clearInterval(tlConvTimer);tlConvTimer=null;}
   if(n===1)hookStart();
   if(n===2&&!document.getElementById('ringpanel').innerHTML)showRing(0);
-  if(n===3){buildNet();ntpRender();}
-  if(n===4)piecesInit();
-  if(n===6){calc();}
-  if(n===7){floatRender();batchStage=0;drawBatch();}
-  if(n===8)clampRender();
-  if(n===9){agentI=0;agentRender();}
-  if(n===11){qaI=-1;qaEls().forEach(e=>e.classList.remove('shown'));}
+  if(n===3){tlI=0;tlRender();}
+  if(n===4){ntpi=0;ntpJust=-1;ntpBusy=false;ntpRender(false);}
+  if(n===5)piecesInit();
+  if(n===7){calc();}
+  if(n===8){floatRender();batchStage=0;drawBatch();}
+  if(n===9)clampRender();
+  if(n===10){agentI=0;agentRender();}
+  if(n===12){qaI=-1;qaEls().forEach(e=>e.classList.remove('shown'));}
 }
 showRing(0);calc();go(0);
 </script>
